@@ -1,0 +1,9 @@
+# Ignore Pandoc output files
+*.pdf
+
+# Ignore temporary files and directories
+.DS_Store
+Thumbs.db
+
+# Ignore any vscode files and directories
+.vscode/
