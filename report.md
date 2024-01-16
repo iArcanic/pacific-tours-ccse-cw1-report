@@ -30,7 +30,28 @@ To meet the outlined requirements, a software development methodology, specifica
 
 The iterative approach to developing software has been highly beneficial to programmers to improve their skills and organisations in estimating the necessary timespan required for certain tasks [@edeki2015]. Its traits of flexibility, a clear-defined scope of requirements, quick adaptability as well and pragmatism to deliverables make it suitable for software companies to survive within evolving landscapes [@brush2022] – whilst maintaining the company's business interests.
 
-Agile programming utilises the idea of sprints, which are iterative repetitions whereby a functionality is taken and developed to produce small new increments. Each sprint follows the typical developmental phases, as seen in more traditional software methodologies such as the waterfall method. These phases include: requirements, analysis, design, evolution and delivery [@abrahamsson2017].
+Agile programming utilises the idea of sprints, which are iterative repetitions whereby a functionality is taken and developed to produce small new increments. Each sprint follows the typical developmental phases, as seen in more traditional software methodologies such as the waterfall method. These phases include requirements, analysis, design, evolution, and delivery @abrahamsson2017].
+
+## 2.2 Agile application and design considerations
+
+For this specific scenario, however, an agile methodology was adopted with sprints lasting weekly. This timeframe proved to be adequate for implementing (which arguably took most of the time), demonstrating, and conducting robust testing. Rather than delivering all the requirements at once, it was beneficial to abstract and break the overall scenario down into key components and decompose further if required.
+
+The sprints were broken down into the following, assuming that this project took approximately a month or so to complete.
+
+### 2.2.1 Sprint 1
+
+| Tasks                                                                        | Interpretation                                                                                                             |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Choosing suitable web technologies                                           | ASP.NET C# with both client and server side combined                                                                       |
+| Setting up robust development environment                                    | Adequate system resources with high performance, Windows 10 OS, Microsoft SQL Management Studio, stable network connection |
+| Familiarising with technologies by developing small Proof of Concepts (POCs) | Experiment with Blazor WebAssembly, ASP.NET default scaffolded classes etc.                                                |
+| Deciding the project structure and architecture                              | Single ASP.NET Core Web application with folders for Pages, Services, Exceptions, Models                                   |
+
+### 2.2.2 Sprint 2
+
+### 2.2.3 Sprint 3
+
+### 2.2.4 Sprint 4
 
 # 3 System functionality and features
 
