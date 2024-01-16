@@ -34,20 +34,27 @@ Agile programming utilises the idea of sprints, which are iterative repetitions 
 
 ## 2.2 Agile application and design considerations
 
-For this specific scenario, however, an agile methodology was adopted with sprints lasting weekly. This timeframe proved to be adequate for implementing (which arguably took most of the time), demonstrating, and conducting robust testing. Rather than delivering all the requirements at once, it was beneficial to abstract and break the overall scenario down into key components and decompose further if required.
+For this specific scenario, however, an agile methodology was adopted with sprints each lasting 2-weeks. This timeframe proved to be adequate for implementing (which arguably took most of the time), demonstrating, and conducting robust testing. Rather than delivering all the requirements at once, it was beneficial to abstract and break the overall scenario down into key components and decompose further if required.
 
-The sprints were broken down into the following, assuming that this project took approximately a month or so to complete.
+The sprints were broken down into the following as so, assuming that the project took nearly 2-months.
 
 ### 2.2.1 Sprint 1
 
-| Tasks                                                                        | Interpretation                                                                                                             |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Choosing suitable web technologies                                           | ASP.NET C# with both client and server side combined                                                                       |
-| Setting up robust development environment                                    | Adequate system resources with high performance, Windows 10 OS, Microsoft SQL Management Studio, stable network connection |
-| Familiarising with technologies by developing small Proof of Concepts (POCs) | Experiment with Blazor WebAssembly, ASP.NET default scaffolded classes etc.                                                |
-| Deciding the project structure and architecture                              | Single ASP.NET Core Web application with folders for Pages, Services, Exceptions, Models                                   |
+| Tasks                                                                        | Interpretation                                                                                                            |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Choosing suitable web technologies                                           | ASP.NET C# with both client and server side combined                                                                      |
+| Setting up robust development environment                                    | Adequate system resources for high performance, Windows 10 OS, Microsoft SQL Management Studio, stable network connection |
+| Familiarising with technologies by developing small Proof of Concepts (POCs) | Experiment with Blazor WebAssembly, ASP.NET default scaffolded classes etc.                                               |
+| Deciding the project structure and architecture                              | Single ASP.NET Core Web application with folders for Pages, Services, Exceptions, Models                                  |
 
 ### 2.2.2 Sprint 2
+
+| Tasks                              | Interpretation                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Setup version control system       | Using a private GitHub repository                                                               |
+| Configure SQL database settings    | Using Microsoft SQL Management Studio, database context class, Entity Framework Core Migrations |
+| Integrate user model               | Using Entity Framework Core Identity, ApplicationUser model                                     |
+| Add registration, login and logout | Using ASP.NET scaffolding for default registration, login and logout pages and functionality    |
 
 ### 2.2.3 Sprint 3
 
@@ -58,5 +65,9 @@ The sprints were broken down into the following, assuming that this project took
 # 4 Cyber security implementation
 
 # 5 Appendices
+
+## 5.1 Link to GitHub repository
+
+[Pacific Tours (pacific-tours-ccse-cw1)](https://github.com/iArcanic/pacific-tours-ccse-cw1)
 
 # 6 References
