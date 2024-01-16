@@ -67,6 +67,15 @@ The sprints were broken down into the following as so, assuming that the project
 
 ### 2.2.4 Sprint 4
 
+| Tasks                                      | Interpretation                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Implement Bookings page UI                 | Tab based UI for Hotels, Tours and Packages and relevant form fields                                          |
+| Implement Bookings functionality           | Configure database query and write to database                                                                |
+| Implement View Bookings page UI            | Table based UI for Hotels, Tours and Packages with relevant details plus Edit and Cancel buttons              |
+| Implement View Bookings functionality      | Hotels, Tours or Packages booked should be rendered to the page dynamically based on database state           |
+| Implement Edit Bookings page UI            | Derive from Bookings page form UI for each Hotels, Tours and Packages                                         |
+| Implement Edit Bookings page functionality | Redirect to relevant edit page on button click, search based on dates, update database and View Bookings page |
+
 # 3 System functionality and features
 
 # 4 Cyber security implementation
