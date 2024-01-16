@@ -8,3 +8,4 @@
 - [ ] Add images of system and reference them in appendix where necessary
 - [ ] Talk about how Entity Framework Core Identity already has in built stuff – like password hashing, 2FA etc.
 - [ ] Talk about input validation
+- [ ] Add image of Git repo under appendices link

@@ -58,6 +58,13 @@ The sprints were broken down into the following as so, assuming that the project
 
 ### 2.2.3 Sprint 3
 
+| Tasks                                                                 | Interpretation                                                                                               |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Decide on database entities                                           | Such Hotels, Tours, Availabilities, etc.                                                                     |
+| Discern entity relations between tables                               | Mostly one-to-many/many-to-one with a few one-to-one relations                                               |
+| Test SQL database and interact with it via code                       | Use Entity Framework Core Migrations to update database and use data context class to facilitate interaction |
+| Initially draft the UI for any required pages and their functionality | Such as Bookings, Edit Bookings, View Bookings and so on                                                     |
+
 ### 2.2.4 Sprint 4
 
 # 3 System functionality and features
