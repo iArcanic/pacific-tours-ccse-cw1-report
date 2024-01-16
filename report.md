@@ -24,6 +24,8 @@ The main requirements for this system are as follows:
 
 # 2 System design and development approach
 
+To meet the outlined requirements, a software development methodology, specifically agile, was incorporated to iteratively gather requirements, and design considerations to implement and demonstrate credible working progression within set cycles.
+
 # 3 System functionality and features
 
 # 4 Cyber security implementation
