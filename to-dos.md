@@ -9,3 +9,4 @@
 - [ ] Talk about how Entity Framework Core Identity already has in built stuff – like password hashing, 2FA etc.
 - [ ] Talk about input validation
 - [ ] Add image of Git repo under appendices link
+- [ ] Talk about making a HotelDiscount class and that its also extendable for TourDiscount class in the future.
