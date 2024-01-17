@@ -166,6 +166,245 @@ public class InputModel
 
 For more detail see Appendix [5.2](#52-scaffolding-generated-files-for-user-account-management) for the content of all files relating to user account management.
 
+## 3.2 Key requirement 2: Bookings
+
+The requirement for this part of the scenario involves a single bookings page in which the user can either book a hotel, tour, or package (a combination of both a hotel and a tour). For this page, inspiration was taken from Bookings.com UI – which features a tab-based selection, where there is a distinct tab for each entity. Therefore, such a format was taken, and the starting code for this was taken from W3Schools [@w3schools2024] (See Appendix [5.3.1](#531-w3schools-tab-based-ui)).
+
+This UI however, has to be adapted for the Bookings system, since the default tab logic doesn't take into account the refresh on form submit, persistence of input box states, additional client-side validation and so on. This whole host of issues involved additional JavaScript client-side validation that cannot be addressed by the server-side C# code alone.
+
+Since the UI and backend logic is virtually similar to each other, looking at the implementation of hotel bookings should suffice.
+
+Starting with the UI, here, towards the top, the `asp-page-handler` attribute of the form element corresponds to `HotelSearch`, i.e. the correct `OnPostAsync` method in the server-side code. This also means that the URL will have a new query parameter, `handler=HotelSearch`, making it easy to distinguish between what tab is selected. Furthermore, there is the necessary validation from the service which is referenced here through the `asp-validation` element tags.
+
+```csharp
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="hotelSearchForm" method="post" asp-page-handler="HotelSearch">
+    <div id="Hotels" class="tabcontent">
+        <h3>Search Hotels</h3>
+        <hr />
+        <div class="form-group">
+            <label asp-for="HotelSearch.CheckInDate">Select check-in date:</label>
+            <input id="hotelCheckInDate" asp-for="HotelSearch.CheckInDate" type="date" class="form-control" />
+            <span asp-validation-for="HotelSearch.CheckInDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="HotelSearch.CheckInDate">Select check-out date:</label>
+            <input id="hotelCheckOutDate" asp-for="HotelSearch.CheckOutDate" type="date" class="form-control" />
+            <span asp-validation-for="HotelSearch.CheckOutDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="HotelSearch.RoomType">Select room type:</label>
+            <select asp-for="HotelSearch.RoomType" asp-items="@Model.HotelSearch.RoomTypes" class="form-control"></select>
+            <span asp-validation-for="HotelSearch.RoomType" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="hotels">Hotels:</label>
+            <select name="hotels" id="hotelsDropdown" onchange='calculateTotalCost("hotelsDropdown", "hotelCheckInDate", "hotelCheckOutDate", "hotelTotalCostMessage")'>
+                @foreach (var hotel in Model.HotelSearch.HotelsList)
+                {
+                    <option value="@hotel.HotelId">@(hotel.Name + " £" + hotel.Cost + " (per night)")</option>
+                }
+            </select>
+            <p id="hotelsDropdownErrorMessage" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <input type="submit" name="command" class="btn btn-primary" value="Search" />
+        </div>
+        <hr />
+        <p id="hotelTotalCostMessage">Total Cost: £0</p>
+        <div class="form-group">
+            <input class="btn btn-primary" name="command" value="Book" onclick="submitHotelSearchForm()" />
+        </div>
+    </div>
+</form>
+```
+
+Here below, are the relevant JavaScript functions that are referenced in the code.
+
+As mentioned previously, since the `OnPostAsync` function reloads the page, using the page handler, this `switch` statement checks what form is being submitted and automatically selects the relevant tab as default with the `onClick()` method.
+
+```javascript
+let params = new URL(document.location).searchParams;
+let handler = params.get("handler");
+
+switch (handler) {
+  case "HotelSearch":
+    document.getElementById("HotelTab").click();
+    break;
+  case "TourSearch":
+    document.getElementById("TourTab").click();
+    break;
+  case "PackageBook":
+    document.getElementById("PackageTab").click();
+    break;
+  default:
+    break;
+}
+```
+
+Here, this method checks whether the dropdown box is not empty and displays an appropriate error message by referencing a paragraph tag within the form. It only then submits the form dynamically if the `selectBoxValue` isn't null.
+
+```javascript
+function submitHotelSearchForm() {
+  var dropdownErrorMessage = document.getElementById(
+    "hotelsDropdownErrorMessage"
+  );
+  dropdownErrorMessage.innerHTML = "";
+
+  var form = document.getElementById("hotelSearchForm");
+  var selectBoxValue = form.elements["hotelsDropdown"].value;
+
+  if (!selectBoxValue) {
+    dropdownErrorMessage.innerHTML = "Please select a hotel for booking";
+    return;
+  }
+
+  form.elements["command"].value = "Book";
+  form.submit();
+}
+```
+
+The following series of functions are related to cost calculations for all three tabs.
+
+The first function, `calculateTotal(dropdown, fromDate, toDate)`, extracts the cost value from the dropdown box and calculates the cost of the hotel or tour per night/day by taking the duration of days in between the inputted dates.
+
+```javascript
+function calculateTotal(dropdown, fromDate, toDate) {
+  var selectedDropdown = document.getElementById(dropdown);
+  var selectedOption = selectedDropdown.options[selectedDropdown.selectedIndex];
+  var cost = selectedOption.textContent.split(" £")[1].split(" ")[0];
+
+  var startDate = new Date(document.getElementById(fromDate).value);
+  var endDate = new Date(document.getElementById(toDate).value);
+
+  var durationInDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+  return parseFloat((cost * durationInDays).toFixed(2));
+}
+
+function calculateTotalCost(dropdown, fromDate, toDate, totalCostMessageId) {
+  document.getElementById(totalCostMessageId).innerHTML =
+    "Total Cost: £" + calculateTotal(dropdown, fromDate, toDate);
+}
+```
+
+This next function, is specifically for calculating the total cost of a package since it contains both a tour and hotel. Since logic doesn't need to be repeated, it utilises the previous function to calculate the overall cost.
+
+```javascript
+function calculateTotalPackageCost() {
+  var packageHotelCost = calculateTotal(
+    "packageHotelsDropdownId",
+    "packageHotelCheckInDate",
+    "packageHotelCheckOutDate"
+  );
+  var packageTourCost = calculateTotal(
+    "packageToursDropdownId",
+    "packageTourStartDate",
+    "packageTourEndDate"
+  );
+
+  var packageTotalCost = packageHotelCost + packageTourCost;
+
+  document.getElementById("packageTotalCostMessage").innerHTML =
+    "Total Cost: £" + packageTotalCost;
+}
+```
+
+Finally, upon page reload, an attached event listener upon page reload will check which tab is active and apply the total cost calculation dynamically. This uses the `.className` attribute of the tab switching code.
+
+```javascript
+window.addEventListener("load", function () {
+  if (document.getElementById("HotelTab").className == "tablinks active") {
+    calculateTotalCost(
+      "hotelsDropdown",
+      "hotelCheckInDate",
+      "hotelCheckOutDate",
+      "hotelTotalCostMessage"
+    );
+  } else if (
+    document.getElementById("TourTab").className == "tablinks active"
+  ) {
+    calculateTotalCost(
+      "toursDropdown",
+      "tourStartDate",
+      "tourEndDate",
+      "tourTotalCostMessage"
+    );
+  } else if (
+    document.getElementById("PackageTab").className == "tablinks active"
+  ) {
+    calculateTotalPackageCost();
+  }
+});
+```
+
+Moving onto the server-side function, again, the bind model for the client-side properties are the same. Taking the `OnPostHotelSearchAsync` function as the logic for all three is consistent, it again first checks if the `ModelState`, which is the logic and client-side elements, are valid.
+
+```csharp
+public async Task<IActionResult> OnPostHotelSearchAsync(string command, string returnUrl = null)
+{
+    if (!ModelState.IsValid)
+    {
+        return Page();
+    }
+```
+
+Then, it checks if the button clicked is search, via the `command` parameter. This references the `name=command` element for the search button on the client-side. Using the database context, it checks for all available hotels based on the user's dates and returns the found `Hotel` object. It then binds this into the `HotelList` to the client-side element.
+
+```csharp
+if (command == "Search")
+{
+var availableHotels = await _dbContext.HotelAvailabilities
+    .Where(ha =>
+        ha.AvailableFrom <= HotelSearch.CheckInDate &&
+        ha.AvailableTo >= HotelSearch.CheckOutDate &&
+        ha.Hotel.RoomType == HotelSearch.RoomType)
+    .Select(ha => ha.Hotel)
+    .Distinct()
+    .ToListAsync();
+
+HotelSearch.HotelsList = availableHotels;
+
+return Page();
+```
+
+However, in the else block, i.e. the "Book" button is clicked, a new hotel booking is made, referencing the `HotelBooking` model. This model takes in an unique ID, i.e. the HotelBookingId as a GUID data type, a reference to the `Hotel` which the user selected, the dates and a reference to the current user found via the `IdentityUser`'s `UserManager` class. It is then added to the `HotelBookings` table in the database. Finally, a redirection is made to the "/Payment" page with the booking ID and type of booking (hotel, tour, or package) as a query parameter in the URL. This is then extracted in the payments page for further use.
+
+```csharp
+else
+{
+    var SelectedHotelId = new Guid(Request.Form["hotels"]);
+    var CurrentUser = await _userManager.GetUserAsync(User);
+    Hotel SelectedHotel = await _dbContext.Hotels.FindAsync(SelectedHotelId);
+
+    var hotelBooking = new HotelBooking
+    {
+        HotelBookingId = new Guid(),
+        HotelId = SelectedHotelId,
+        UserId = CurrentUser.Id,
+        CheckInDate = HotelSearch.CheckInDate,
+        CheckOutDate = HotelSearch.CheckOutDate,
+        Hotel = SelectedHotel,
+        ApplicationUser = CurrentUser
+    };
+
+    _dbContext.HotelBookings.Add(hotelBooking);
+    await _dbContext.SaveChangesAsync();
+
+    return RedirectToPage("/Payment", new
+    {
+        bookingId = hotelBooking.HotelBookingId.ToString(),
+        bookingType = "hotel"
+    });
+}
+```
+
+For more detail see Appendix [5.3](#53-files-for-hotel-tour-and-package-bookings) for the content of all files relating to bookings.
+
+## 3.3 Key requirement 3: View Bookings
+
+## 3.4 Key requirement 4: Edit Bookings
+
 # 4 Cyber security implementation
 
 # 5 Appendices
@@ -738,5 +977,743 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
     }
 }
 ```
+
+## 5.3 Files for hotel, tour, and package Bookings
+
+### 5.3.1 W3Schools tab-based UI
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: Arial;
+      }
+
+      /* Style the tab */
+      .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+      }
+
+      /* Style the buttons inside the tab */
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+      }
+
+      /* Change background color of buttons on hover */
+      .tab button:hover {
+        background-color: #ddd;
+      }
+
+      /* Create an active/current tablink class */
+      .tab button.active {
+        background-color: #ccc;
+      }
+
+      /* Style the tab content */
+      .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Tabs</h2>
+    <p>Click on the buttons inside the tabbed menu:</p>
+
+    <div class="tab">
+      <button class="tablinks" onclick="openCity(event, 'London')">
+        London
+      </button>
+      <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
+      <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button>
+    </div>
+
+    <div id="London" class="tabcontent">
+      <h3>London</h3>
+      <p>London is the capital city of England.</p>
+    </div>
+
+    <div id="Paris" class="tabcontent">
+      <h3>Paris</h3>
+      <p>Paris is the capital of France.</p>
+    </div>
+
+    <div id="Tokyo" class="tabcontent">
+      <h3>Tokyo</h3>
+      <p>Tokyo is the capital of Japan.</p>
+    </div>
+
+    <script>
+      function openCity(evt, cityName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " active";
+      }
+    </script>
+  </body>
+</html>
+```
+
+### 5.3.2 [`Bookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Bookings.cshtml)
+
+```csharp
+@page
+@model BookingsModel
+@{
+    ViewData["Title"] = "Bookings";
+}
+
+<h2>Bookings</h2>
+<style>
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+    }
+
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+
+            .tab button:hover {
+                background-color: #ddd;
+            }
+
+            .tab button.active {
+                background-color: #ccc;
+            }
+
+    .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+    }
+</style>
+<div class="tab">
+    <button class="tablinks" onclick="openTab(event, 'Hotels')" id="HotelTab">Hotels</button>
+    <button class="tablinks" onclick="openTab(event, 'Tours')" id="TourTab">Tours</button>
+    <button class="tablinks" onclick="openTab(event, 'Packages')" id="PackageTab">Packages</button>
+</div>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="hotelSearchForm" method="post" asp-page-handler="HotelSearch">
+    <div id="Hotels" class="tabcontent">
+        <h3>Search Hotels</h3>
+        <hr />
+        <div class="form-group">
+            <label asp-for="HotelSearch.CheckInDate">Select check-in date:</label>
+            <input id="hotelCheckInDate" asp-for="HotelSearch.CheckInDate" type="date" class="form-control" value="2024-01-09" />
+            <span asp-validation-for="HotelSearch.CheckInDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="HotelSearch.CheckInDate">Select check-out date:</label>
+            <input id="hotelCheckOutDate" asp-for="HotelSearch.CheckOutDate" type="date" class="form-control" value="2024-01-27" />
+            <span asp-validation-for="HotelSearch.CheckOutDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="HotelSearch.RoomType">Select room type:</label>
+            <select asp-for="HotelSearch.RoomType" asp-items="@Model.HotelSearch.RoomTypes" class="form-control"></select>
+            <span asp-validation-for="HotelSearch.RoomType" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="hotels">Hotels:</label>
+            <select name="hotels" id="hotelsDropdown" onchange='calculateTotalCost("hotelsDropdown", "hotelCheckInDate", "hotelCheckOutDate", "hotelTotalCostMessage")'>
+                @foreach (var hotel in Model.HotelSearch.HotelsList)
+                {
+                    <option value="@hotel.HotelId">@(hotel.Name + " £" + hotel.Cost + " (per night)")</option>
+                }
+            </select>
+            <p id="hotelsDropdownErrorMessage" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <input type="submit" name="command" class="btn btn-primary" value="Search" />
+        </div>
+        <hr />
+        <p id="hotelTotalCostMessage">Total Cost: £0</p>
+        <div class="form-group">
+            <input class="btn btn-primary" name="command" value="Book" onclick="submitHotelSearchForm()" />
+        </div>
+    </div>
+</form>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="tourSearchForm" method="post" asp-page-handler="TourSearch">
+    <div id="Tours" class="tabcontent">
+        <h3>Search Tours</h3>
+        <hr />
+        <div class="form-group">
+            <label asp-for="TourSearch.TourStartDate">Select Tour Start Date:</label>
+            <input id="tourStartDate" asp-for="TourSearch.TourStartDate" type="date" class="form-control" value="2024-01-15" />
+            <span asp-validation-for="TourSearch.TourEndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="TourSearch.TourEndDate">Select Tour End Date:</label>
+            <input id="tourEndDate"  asp-for="TourSearch.TourEndDate" type="date" class="form-control" value="2024-01-20" />
+            <span asp-validation-for="TourSearch.TourEndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="tours">Tours:</label>
+            <select name="tours" id="toursDropdown" onchange='calculateTotalCost("toursDropdown", "tourStartDate", "tourEndDate", "tourTotalCostMessage")'>
+                @foreach (var tour in Model.TourSearch.ToursList)
+                {
+                    <option value="@tour.TourId">@(tour.Name + " £" + tour.Cost)</option>
+                }
+            </select>
+            <p id="toursDropdownErrorMessage" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <input type="submit" name="command" class="btn btn-primary" value="Search"/>
+        </div>
+        <hr />
+        <p id="tourTotalCostMessage">Total Cost: £0</p>
+        <div class="form-group">
+            <input class="btn btn-primary" name="command" value="Book" onclick="submitTourSearchForm()"/>
+        </div>
+    </div>
+</form>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="packageBookForm" method="post" asp-page-handler="PackageBook">
+    <div id="Packages" class="tabcontent">
+        <h3>Packages</h3>
+        <hr />
+        <h4>Search Hotels</h4>
+        <hr />
+        <div class="form-group">
+            <label asp-for="PackageBook.CheckInDate">Select check-in date:</label>
+            <input id="packageHotelCheckInDate" asp-for="PackageBook.CheckInDate" type="date" class="form-control" value="2024-01-09" />
+            <span asp-validation-for="PackageBook.CheckInDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PackageBook.CheckInDate">Select check-out date:</label>
+            <input id="packageHotelCheckOutDate" asp-for="PackageBook.CheckOutDate" type="date" class="form-control" value="2024-01-27" />
+            <span asp-validation-for="PackageBook.CheckOutDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PackageBook.RoomType">Select room type:</label>
+            <select asp-for="PackageBook.RoomType" asp-items="@Model.PackageBook.RoomTypes" class="form-control"></select>
+            <span asp-validation-for="PackageBook.RoomType" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="packageHotels">Hotels:</label>
+            <select name="packageHotelsDropdown" id="packageHotelsDropdownId" onchange='calculateTotalPackageCost()'>
+                @foreach (var hotel in Model.PackageBook.HotelsList)
+                {
+                    <option value="@hotel.HotelId">@(hotel.Name + " £" + hotel.Cost)</option>
+                }
+            </select>
+            <p id="packageHotelsDropdownErrorMessage" class="text-danger"></p>
+        </div>
+        <hr />
+        <h4>Search Tours</h4>
+        <hr />
+        <div class="form-group">
+            <label asp-for="PackageBook.TourStartDate">Select Tour Start Date:</label>
+            <input id="packageTourStartDate" asp-for="PackageBook.TourStartDate" type="date" class="form-control" value="2024-01-15" />
+            <span asp-validation-for="PackageBook.TourEndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="PackageBook.TourEndDate">Select Tour End Date:</label>
+            <input id="packageTourEndDate" asp-for="PackageBook.TourEndDate" type="date" class="form-control" value="2024-01-20" />
+            <span asp-validation-for="PackageBook.TourEndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="packageTours">Tours:</label>
+            <select name="packageToursDropdown" id="packageToursDropdownId" onchange='calculateTotalPackageCost()'>
+                @foreach (var tour in Model.PackageBook.ToursList)
+                {
+                    <option value="@tour.TourId">@(tour.Name + " £" + tour.Cost)</option>
+                }
+            </select>
+            <p id="packageToursDropdownErrorMessage" class="text-danger"></p>
+        </div>
+        <hr />
+        <div class="form-group">
+            <input type="submit" name="command" class="btn btn-primary" value="Search" />
+        </div>
+        <hr />
+        <p id="packageTotalCostMessage">Total Cost: £0</p>
+        <div class="form-group">
+            <input class="btn btn-primary" name="command" value="Book" onclick="submitPackageBookForm()" />
+        </div>
+    </div>
+</form>
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    let params = (new URL(document.location)).searchParams;
+    let handler = params.get("handler");
+
+    switch (handler) {
+        case "HotelSearch":
+            document.getElementById("HotelTab").click();
+            break;
+        case "TourSearch":
+            document.getElementById("TourTab").click();
+            break;
+        case "PackageBook":
+            document.getElementById("PackageTab").click();
+            break;
+        default:
+            break;
+    }
+
+    function submitHotelSearchForm() {
+        var dropdownErrorMessage = document.getElementById("hotelsDropdownErrorMessage");
+        dropdownErrorMessage.innerHTML = "";
+
+        var form = document.getElementById("hotelSearchForm");
+        var selectBoxValue = form.elements["hotelsDropdown"].value;
+
+        if (!selectBoxValue) {
+            dropdownErrorMessage.innerHTML = "Please select a hotel for booking";
+            return;
+        }
+
+        form.elements["command"].value = "Book";
+        form.submit();
+    }
+
+    function submitTourSearchForm() {
+        var dropdownErrorMessage = document.getElementById("toursDropdownErrorMessage");
+        dropdownErrorMessage.innerHTML = "";
+
+        var form = document.getElementById("tourSearchForm");
+        var selectBoxValue = form.elements["toursDropdown"].value;
+
+        if (!selectBoxValue) {
+            dropdownErrorMessage.innerHTML = "Please select a tour for booking";
+            return;
+        }
+
+        form.elements["command"].value = "Book";
+        form.submit();
+    }
+
+    function submitPackageBookForm() {
+        var hotelsDropdownErrorMessage = document.getElementById("packageHotelsDropdownErrorMessage");
+        hotelsDropdownErrorMessage.innerHTML = "";
+
+        var toursDropdownErrorMessage = document.getElementById("packageToursDropdownErrorMessage");
+        toursDropdownErrorMessage.innerHTML = "";
+
+        var form = document.getElementById("packageBookForm");
+
+        var hotelsSelectBoxValue = form.elements["packageHotelsDropdown"].value;
+        var toursSelectBoxValue = form.elements["packageToursDropdown"].value;
+
+        var errorReturn = false;
+
+        if (!hotelsSelectBoxValue) {
+            hotelsDropdownErrorMessage.innerHTML = "Please select a hotel for booking";
+            errorReturn = true;
+        }
+
+        if (!toursSelectBoxValue) {
+            toursDropdownErrorMessage.innerHTML = "Please select a tour for booking";
+            errorReturn = true;
+        }
+
+        if (errorReturn) {
+            return;
+        }
+
+        form.elements["command"].value = "Book";
+        form.submit();
+    }
+
+    function calculateTotal(dropdown, fromDate, toDate) {
+        var selectedDropdown = document.getElementById(dropdown);
+        var selectedOption = selectedDropdown.options[selectedDropdown.selectedIndex];
+        var cost = selectedOption.textContent.split(' £')[1].split(' ')[0];
+
+        var startDate = new Date(document.getElementById(fromDate).value);
+        var endDate = new Date(document.getElementById(toDate).value);
+
+        var durationInDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+        return parseFloat((cost * durationInDays).toFixed(2));
+    }
+
+    function calculateTotalCost(dropdown, fromDate, toDate, totalCostMessageId) {
+        document.getElementById(totalCostMessageId).innerHTML = "Total Cost: £" + calculateTotal(dropdown, fromDate, toDate);
+    }
+
+    function calculateTotalPackageCost() {
+        var packageHotelCost = calculateTotal("packageHotelsDropdownId", "packageHotelCheckInDate", "packageHotelCheckOutDate");
+        var packageTourCost = calculateTotal("packageToursDropdownId", "packageTourStartDate", "packageTourEndDate");
+
+        var packageTotalCost = packageHotelCost + packageTourCost
+
+        document.getElementById("packageTotalCostMessage").innerHTML = "Total Cost: £" + packageTotalCost;
+    }
+
+    window.addEventListener('load', function () {
+        if (document.getElementById("HotelTab").className == "tablinks active") {
+            calculateTotalCost("hotelsDropdown", "hotelCheckInDate", "hotelCheckOutDate", "hotelTotalCostMessage");
+        }
+        else if (document.getElementById("TourTab").className == "tablinks active") {
+            calculateTotalCost("toursDropdown", "tourStartDate", "tourEndDate", "tourTotalCostMessage");
+        }
+        else if (document.getElementById("PackageTab").className == "tablinks active") {
+            calculateTotalPackageCost();
+        }
+    });
+</script>
+```
+
+### 5.3.3 [`Bookings.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Bookings.cshtml.cs)
+
+```csharp
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class BookingsModel : PageModel
+    {
+        [BindProperty]
+        public HotelSearchModel HotelSearch { get; set; }
+
+        [BindProperty]
+        public TourSearchModel TourSearch { get; set; }
+
+        [BindProperty]
+        public PackageBookModel PackageBook { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public BookingsModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            HotelSearch = new HotelSearchModel();
+            TourSearch = new TourSearchModel();
+            PackageBook = new PackageBookModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class HotelSearchModel
+        {
+            [Required(ErrorMessage = "Please select a check-in date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check in date")]
+            public DateTime CheckInDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a check-out date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check out date")]
+            public DateTime CheckOutDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a room type")]
+            [DataType(DataType.Text)]
+            [Display(Name = "Room type")]
+            public string RoomType { get; set; } = "Single";
+
+            public List<SelectListItem> RoomTypes { get; set; } = new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Value = "single",
+                    Text = "Single"
+                },
+                new SelectListItem
+                {
+                    Value = "double",
+                    Text = "Double"
+                },
+                new SelectListItem
+                {
+                    Value = "family suite",
+                    Text = "Family Suite"
+                }
+            };
+
+            public List<Hotel> HotelsList { get; set; } = new List<Hotel>();
+        }
+
+        public class TourSearchModel
+        {
+            [Required(ErrorMessage = "Please select a tour start date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour start date")]
+            public DateTime TourStartDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a tour end date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour end date")]
+            public DateTime TourEndDate { get; set; }
+
+            public List<String> AvailableTours { get; set; } = new List<string>();
+
+            public List<Tour> ToursList { get; set; } = new List<Tour>();
+        }
+
+        public class PackageBookModel
+        {
+            [Required(ErrorMessage = "Please select a check-in date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check in date")]
+            public DateTime CheckInDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a check-out date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check out date")]
+            public DateTime CheckOutDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a room type")]
+            [DataType(DataType.Text)]
+            [Display(Name = "Room type")]
+            public string RoomType { get; set; } = "Single";
+
+            public List<SelectListItem> RoomTypes { get; set; } = new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Value = "single",
+                    Text = "Single"
+                },
+                new SelectListItem
+                {
+                    Value = "double",
+                    Text = "Double"
+                },
+                new SelectListItem
+                {
+                    Value = "family suite",
+                    Text = "Family Suite"
+                }
+            };
+
+            public List<Hotel> HotelsList { get; set; } = new List<Hotel>();
+
+            [Required(ErrorMessage = "Please select a tour start date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour start date")]
+            public DateTime TourStartDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a tour end date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour end date")]
+            public DateTime TourEndDate { get; set; }
+
+            public List<Tour> ToursList { get; set; } = new List<Tour>();
+        }
+
+        public async Task<IActionResult> OnPostHotelSearchAsync(string command, string returnUrl = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            if (command == "Search")
+            {
+                var availableHotels = await _dbContext.HotelAvailabilities
+                    .Where(ha =>
+                        ha.AvailableFrom <= HotelSearch.CheckInDate &&
+                        ha.AvailableTo >= HotelSearch.CheckOutDate &&
+                        ha.Hotel.RoomType == HotelSearch.RoomType)
+                    .Select(ha => ha.Hotel)
+                    .Distinct()
+                    .ToListAsync();
+
+                HotelSearch.HotelsList = availableHotels;
+
+                return Page();
+            }
+            else
+            {
+                var SelectedHotelId = new Guid(Request.Form["hotels"]);
+                var CurrentUser = await _userManager.GetUserAsync(User);
+                Hotel SelectedHotel = await _dbContext.Hotels.FindAsync(SelectedHotelId);
+
+                var hotelBooking = new HotelBooking
+                {
+                    HotelBookingId = new Guid(),
+                    HotelId = SelectedHotelId,
+                    UserId = CurrentUser.Id,
+                    CheckInDate = HotelSearch.CheckInDate,
+                    CheckOutDate = HotelSearch.CheckOutDate,
+                    Hotel = SelectedHotel,
+                    ApplicationUser = CurrentUser
+                };
+
+                _dbContext.HotelBookings.Add(hotelBooking);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/Payment", new
+                {
+                    bookingId = hotelBooking.HotelBookingId.ToString(),
+                    bookingType = "hotel"
+                });
+            }
+        }
+
+        public async Task<IActionResult> OnPostTourSearchAsync(string command, string returnUrl = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            if (command == "Search")
+            {
+                var availableTours = await _dbContext.TourAvailabilities
+                .Where(ta =>
+                    ta.AvailableFrom <= TourSearch.TourStartDate && ta.AvailableTo >= TourSearch.TourEndDate)
+                .Select(ta => ta.Tour)
+                .Distinct()
+                .ToListAsync();
+
+                TourSearch.ToursList = availableTours;
+
+                return Page();
+            }
+            else
+            {
+                var SelectedTourId = new Guid(Request.Form["tours"]);
+                var CurrentUser = await _userManager.GetUserAsync(User);
+                Tour SelectedTour = await _dbContext.Tours.FindAsync(SelectedTourId);
+
+                var tourBooking = new TourBooking
+                {
+                    TourBookingId = new Guid(),
+                    TourId = SelectedTourId,
+                    UserId = CurrentUser.Id,
+                    TourStartDate = TourSearch.TourStartDate,
+                    TourEndDate = TourSearch.TourEndDate,
+                    Tour = SelectedTour,
+                    ApplicationUser = CurrentUser
+                };
+
+                _dbContext.TourBookings.Add(tourBooking);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/Payment", new
+                {
+                    bookingId = tourBooking.TourBookingId.ToString(),
+                    bookingType = "tour"
+                });
+            }
+        }
+
+        public async Task<IActionResult> OnPostPackageBookAsync(string command, string returnUrl = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            if (command == "Search")
+            {
+                var availableHotels = await _dbContext.HotelAvailabilities
+                .Where(ha =>
+                    ha.AvailableFrom <= PackageBook.CheckInDate && ha.AvailableTo >= PackageBook.CheckOutDate)
+                .Select(ha => ha.Hotel)
+                .Distinct()
+                .ToListAsync();
+
+                PackageBook.HotelsList = availableHotels;
+
+                var availableTours = await _dbContext.TourAvailabilities
+                    .Where(ta =>
+                        ta.AvailableFrom <= PackageBook.TourStartDate && ta.AvailableTo >= PackageBook.TourEndDate)
+                    .Select(ta => ta.Tour)
+                    .Distinct()
+                    .ToListAsync();
+
+                PackageBook.ToursList = availableTours;
+
+                return Page();
+            }
+            else
+            {
+                var CurrentUser = await _userManager.GetUserAsync(User);
+
+                var SelectedHotelId = new Guid(Request.Form["packageHotelsDropdown"]);
+                Hotel SelectedHotel = await _dbContext.Hotels.FindAsync(SelectedHotelId);
+
+                var SelectedTourId = new Guid(Request.Form["packageToursDropdown"]);
+                Tour SelectedTour = await _dbContext.Tours.FindAsync(SelectedTourId);
+
+                var packageBooking = new PackageBooking
+                {
+                    PackageBookingId = new Guid(),
+                    UserId = CurrentUser.Id,
+                    HotelId = SelectedHotelId,
+                    CheckInDate = PackageBook.CheckInDate,
+                    CheckOutDate = PackageBook.CheckOutDate,
+                    TourId = SelectedTourId,
+                    TourStartDate = PackageBook.TourStartDate,
+                    TourEndDate = PackageBook.TourEndDate,
+                    Hotel = SelectedHotel,
+                    Tour = SelectedTour,
+                    ApplicationUser = CurrentUser
+                };
+
+                _dbContext.PackageBookings.Add(packageBooking);
+
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/Payment", new
+                {
+                    bookingId = packageBooking.PackageBookingId.ToString(),
+                    bookingType = "package"
+                });
+            }
+        }
+    }
+}
+```
+
+## 5.4 Files for View Bookings
+
+## 5.5 Files for hotel, tour, and package Edit Bookings
 
 # 6 References
