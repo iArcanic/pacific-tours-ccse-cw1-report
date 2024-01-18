@@ -399,9 +399,164 @@ else
 }
 ```
 
-For more detail see Appendix [5.3](#53-files-for-hotel-tour-and-package-bookings) for the content of all files relating to bookings.
+For more detail, see Appendix [5.3](#53-files-for-hotel-tour-and-package-bookings) for the content of all files relating to bookings.
 
 ## 3.3 Key requirement 3: View Bookings
+
+For this requirement, any hotels, tours or packages booked by the user should be displayed promptly after a successful payment. This page should hold the latest details of bookings, so even if they are edited (see [3.4](#34-key-requirement-4-edit-bookings)) the most up-to-date details should be displayed.
+
+Starting with the client side code, again, just looking at the hotels should suffice since tours and packages follow the same logic.
+
+Here, inspired by the Bookings page, the `asp-page-handler` element ensures that on form submit, the URL handler parameter is `HotelTable`, helping it to be differentiated from the other forms on the page. The UI is tabular based, so it takes on the headings similar to the properties of the `Hotel` model class. Using in line C#, the rows can be dynamically updated via a `foreach` loop that iterated through a list of type `HotelBookings` that is populated dynamically in the server-side. The row for the hotel cost does a calculation, multiplying it by the duration of days. The days obviously being the difference between the `HotelBooking.CheckInDate` and the `HotelBooking.CheckOutDate`.
+
+```html
+<form id="hotelTableForm" method="post" asp-page-handler="HotelTable">
+  <h3>Hotels</h3>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Room Type</th>
+              <th>Check-in Date</th>
+              <th>Check-out Date</th>
+              <th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <input
+              type="hidden"
+              id="hotelBookingIdInput"
+              name="hotelBookingId"
+              value=""
+            />
+            @foreach (var item in Model.ViewBookingsTable.HotelBookingsList) {
+            <tr>
+              <td>@item.Hotel.Name</td>
+              <td>@item.Hotel.RoomType</td>
+              <td>@item.CheckInDate.ToShortDateString()</td>
+              <td>@item.CheckOutDate.ToShortDateString()</td>
+              <td>
+                @("£" + ((item.CheckOutDate - item.CheckInDate).Days *
+                item.Hotel.Cost).ToString("0.00"))
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <input
+                    type="submit"
+                    class="btn btn-primary"
+                    name="command"
+                    value="Edit"
+                    onclick="submitForm('hotelBookingIdInput', 'hotelTableForm', '@item.HotelBookingId')"
+                  />
+                </div>
+                <div class="btn-group" role="group">
+                  <input
+                    type="submit"
+                    class="btn btn-danger"
+                    name="command"
+                    value="Cancel"
+                    onclick="onCancelClick('hotelBookingIdInput', 'hotelTableForm', '@item.HotelBookingId')"
+                  />
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</form>
+```
+
+For each table entry, there are two additional buttons. One for editing and the other for the cancellation of bookings. These buttons are bound to the below JavaScript functions. Upon the cancellation button, a dialog box appears asking the user for confirmation. It then dynamically submits the form based on that, via the `submitForm` function.
+
+```javascript
+function onCancelClick(bookingInputId, submitFormId, bookingId) {
+  var isConfirmed = window.confirm(
+    "Are you sure you want to cancel your booking?"
+  );
+
+  if (isConfirmed) {
+    submitForm(bookingInputId, submitFormId, bookingId);
+  }
+}
+
+function submitForm(bookingInputId, submitFormId, bookingId) {
+  var form = document.getElementById(submitFormId);
+  document.getElementById(bookingInputId).value = bookingId;
+  form.submit();
+}
+```
+
+For the server-side component for this page, has an `OnGet` function, that executes code on page reload. First, the ID of the current user is required, and using this, a query to the database is made to retrieve all relevant bookings, of all types i.e. hotels, tours and packages. The variable which are bound to the client side take on the value of these variables so that it can be displayed on the page. Finally, the `successMessage` element takes on the query parameter in the URL from the payments page to provide user feedback.
+
+```csharp
+public async Task<IActionResult> OnGet()
+{
+    var CurrentUser = await _userManager.GetUserAsync(User);
+
+    var hotelBookingsList = await _dbContext.HotelBookings
+        .Where(hb => hb.UserId.Equals(CurrentUser.Id) && hb.IsCancelled == false)
+        .Include(hb => hb.Hotel)
+        .ToListAsync();
+
+    ViewBookingsTable.HotelBookingsList = hotelBookingsList;
+
+    var tourBookingsList = await _dbContext.TourBookings
+        .Where(tb => tb.UserId.Equals(CurrentUser.Id) && tb.IsCancelled == false)
+        .Include(tb => tb.Tour)
+        .ToListAsync();
+
+    ViewBookingsTable.TourBookingsList = tourBookingsList;
+
+    var packageBookingsList = await _dbContext.PackageBookings
+        .Where(pb => pb.UserId.Equals(CurrentUser.Id) && pb.IsCancelled == false)
+        .Include(pb => pb.Hotel)
+        .Include(pb => pb.Tour)
+        .ToListAsync();
+
+    ViewBookingsTable.PackageBookingsList = packageBookingsList;
+
+    ViewBookingsTable.SuccessMessage = Request.Query["successMessage"];
+
+    return Page();
+}
+```
+
+Each table in the ViewBookings page has its own `PostAsync` function with the same logic as demonstrated below. It first attempts to take the `HotelBookingId` from the client-side form to make a request to the database to retrieve the correct `HotelBooking`. The `IsCancelled` property is set to the boolean value of `true` and the page redirects to "/ViewBookings". However if the "Edit" button is clicked, it redirects to the appropriate EditBooking page (see [3.4](#34-key-requirement-4-edit-bookings)) and passes the appropriate `HotelBookingId` as a URL query parameter.
+
+```csharp
+public async Task<IActionResult> OnPostHotelTableAsync(string command, string returnUrl = null)
+{
+    if (command == "Cancel")
+    {
+        var HotelBookingId = new Guid(Request.Form["hotelBookingId"]);
+
+        var hotelBooking = await _dbContext.HotelBookings
+            .Where(hb => hb.HotelBookingId == HotelBookingId)
+            .FirstOrDefaultAsync();
+
+        hotelBooking.IsCancelled = true;
+
+        await _dbContext.SaveChangesAsync();
+
+        return RedirectToPage("/ViewBookings");
+    }
+    else
+    {
+        return RedirectToPage("/EditHotelBooking", new
+        {
+            hotelBookingId = Request.Form["hotelBookingId"]
+        });
+    }
+}
+```
+
+For more detail, see Appendix [5.4](#54-files-for-view-bookings) for the content of all files relating to view bookings.
 
 ## 3.4 Key requirement 4: Edit Bookings
 
@@ -1713,6 +1868,151 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 ```
 
 ## 5.4 Files for View Bookings
+
+### 5.4.1 [`ViewBookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml.cs)
+
+```csharp
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class ViewBookingsModel : PageModel
+    {
+        [BindProperty]
+        public ViewBookingsTableModel ViewBookingsTable { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public ViewBookingsModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            ViewBookingsTable = new ViewBookingsTableModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class ViewBookingsTableModel
+        {
+            public List<HotelBooking> HotelBookingsList { get; set; } = new List<HotelBooking>();
+            public List<TourBooking> TourBookingsList { get; set; } = new List<TourBooking>();
+            public List<PackageBooking> PackageBookingsList { get; set; } = new List<PackageBooking>();
+
+            public string SuccessMessage { get; set; }
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            var CurrentUser = await _userManager.GetUserAsync(User);
+
+            var hotelBookingsList = await _dbContext.HotelBookings
+                .Where(hb => hb.UserId.Equals(CurrentUser.Id) && hb.IsCancelled == false)
+                .Include(hb => hb.Hotel)
+                .ToListAsync();
+
+            ViewBookingsTable.HotelBookingsList = hotelBookingsList;
+
+            var tourBookingsList = await _dbContext.TourBookings
+                .Where(tb => tb.UserId.Equals(CurrentUser.Id) && tb.IsCancelled == false)
+                .Include(tb => tb.Tour)
+                .ToListAsync();
+
+            ViewBookingsTable.TourBookingsList = tourBookingsList;
+
+            var packageBookingsList = await _dbContext.PackageBookings
+                .Where(pb => pb.UserId.Equals(CurrentUser.Id) && pb.IsCancelled == false)
+                .Include(pb => pb.Hotel)
+                .Include(pb => pb.Tour)
+                .ToListAsync();
+
+            ViewBookingsTable.PackageBookingsList = packageBookingsList;
+
+            ViewBookingsTable.SuccessMessage = Request.Query["successMessage"];
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostHotelTableAsync(string command, string returnUrl = null)
+        {
+            if (command == "Cancel")
+            {
+                var HotelBookingId = new Guid(Request.Form["hotelBookingId"]);
+
+                var hotelBooking = await _dbContext.HotelBookings
+                    .Where(hb => hb.HotelBookingId == HotelBookingId)
+                    .FirstOrDefaultAsync();
+
+                hotelBooking.IsCancelled = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/ViewBookings");
+            }
+            else
+            {
+                return RedirectToPage("/EditHotelBooking", new
+                {
+                    hotelBookingId = Request.Form["hotelBookingId"]
+                });
+            }
+        }
+
+        public async Task<IActionResult> OnPostTourTableAsync(string command, string returnUrl = null)
+        {
+            if (command == "Cancel")
+            {
+                var TourBookingId = new Guid(Request.Form["tourBookingId"]);
+
+                var tourBooking = await _dbContext.TourBookings
+                    .Where(tb => tb.TourBookingId == TourBookingId)
+                    .FirstOrDefaultAsync();
+
+                tourBooking.IsCancelled = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/ViewBookings");
+            }
+            else
+            {
+                return RedirectToPage("/EditTourBooking", new
+                {
+                    tourBookingId = Request.Form["tourBookingId"]
+                });
+            }
+        }
+
+        public async Task<IActionResult> OnPostPackageTableAsync(string command, string returnUrl = null)
+        {
+            if (command == "Cancel")
+            {
+                var PackageBookingId = new Guid(Request.Form["packageBookingId"]);
+
+                var packageBooking = await _dbContext.PackageBookings
+                    .Where(pb => pb.PackageBookingId == PackageBookingId)
+                    .FirstOrDefaultAsync();
+
+                packageBooking.IsCancelled = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/ViewBookings");
+            }
+            else
+            {
+                return RedirectToPage("/EditPackageBooking", new
+                {
+                    packageBookingId = Request.Form["packageBookingId"]
+                });
+            }
+        }
+    }
+}
+```
 
 ## 5.5 Files for hotel, tour, and package Edit Bookings
 
