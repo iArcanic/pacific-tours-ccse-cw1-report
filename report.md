@@ -560,6 +560,8 @@ For more detail, see Appendix [5.4](#54-files-for-view-bookings) for the content
 
 ## 3.4 Key requirement 4: Edit Bookings
 
+For more detail, see Appendix () for the content of all files relating to edit bookings.
+
 # 4 Cyber security implementation
 
 # 5 Appendices
@@ -1869,7 +1871,177 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ## 5.4 Files for View Bookings
 
-### 5.4.1 [`ViewBookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml.cs)
+### 5.4.1 [`ViewBookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml)
+
+```csharp
+@page
+@model ViewBookingsModel
+@{
+    ViewData["Title"] = "ViewBookings";
+}
+
+<h2>Your bookings</h2>
+<p>Any bookings you have made will be displayed here</p>
+<hr />
+<p class="text-success">@Model.ViewBookingsTable.SuccessMessage</p>
+<form id="hotelTableForm" method="post" asp-page-handler="HotelTable">
+    <h3>Hotels</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Room Type</th>
+                            <th>Check-in Date</th>
+                            <th>Check-out Date</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <input type="hidden" id="hotelBookingIdInput" name="hotelBookingId" value="">
+                        @foreach (var item in Model.ViewBookingsTable.HotelBookingsList)
+                        {
+                            <tr>
+                                <td>@item.Hotel.Name</td>
+                                <td>@item.Hotel.RoomType</td>
+                                <td>@item.CheckInDate.ToShortDateString()</td>
+                                <td>@item.CheckOutDate.ToShortDateString()</td>
+                                <td>@("£" + ((item.CheckOutDate - item.CheckInDate).Days * item.Hotel.Cost).ToString("0.00"))</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <input type="submit" class="btn btn-primary" name="command" value="Edit" onclick="submitForm('hotelBookingIdInput', 'hotelTableForm', '@item.HotelBookingId')" />
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <input type="submit" class="btn btn-danger" name="command" value="Cancel" onclick="onCancelClick('hotelBookingIdInput', 'hotelTableForm', '@item.HotelBookingId')" />
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<form id="tourTableForm" method="post" asp-page-handler="TourTable">
+    <h3>Tours</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Duration (Days)</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <input type="hidden" id="tourBookingIdInput" name="tourBookingId" value="">
+                        @foreach (var item in Model.ViewBookingsTable.TourBookingsList)
+                        {
+                            <tr>
+                                <td>@item.Tour.Name</td>
+                                <td>@item.Tour.DurationInDays</td>
+                                <td>@item.TourStartDate.ToShortDateString()</td>
+                                <td>@item.TourEndDate.ToShortDateString()</td>
+                                <td>@("£" + item.Tour.Cost)</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <input type="submit" class="btn btn-primary" name="command" value="Edit" onclick="submitForm('tourBookingIdInput', 'tourTableForm', '@item.TourBookingId')" />
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <input type="submit" class="btn btn-danger" name="command" value="Cancel" onclick="onCancelClick('tourBookingIdInput', 'tourTableForm', '@item.TourBookingId')" />
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<form id="packageTableForm" method="post" asp-page-handler="PackageTable">
+    <h3>Packages</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Hotel</th>
+                            <th>Room Type</th>
+                            <th>Check-in Date</th>
+                            <th>Check-out Date</th>
+                            <th>Tour</th>
+                            <th>Duration (Days)</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Total Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <input type="hidden" id="packageBookingIdInput" name="packageBookingId" value="">
+                        @foreach (var item in Model.ViewBookingsTable.PackageBookingsList)
+                        {
+                            <tr>
+                                <td>@item.Hotel.Name</td>
+                                <td>@item.Hotel.RoomType</td>
+                                <td>@item.CheckInDate.ToShortDateString()</td>
+                                <td>@item.CheckOutDate.ToShortDateString()</td>
+                                <td>@item.Tour.Name</td>
+                                <td>@item.Tour.DurationInDays</td>
+                                <td>@item.TourStartDate.ToShortDateString()</td>
+                                <td>@item.TourEndDate.ToShortDateString()</td>
+                                <td>
+                                    @{
+                                        var hotelCost = (item.CheckOutDate - item.CheckInDate).Days * item.Hotel.Cost;
+                                        var tourCost = (item.TourEndDate - item.TourStartDate).Days * item.Tour.Cost;
+                                        var totalCost = hotelCost + tourCost;
+                                    }
+                                    @("£" + totalCost.ToString("0.00"))
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <input type="submit" class="btn btn-primary" name="command" value="Edit" onclick="submitForm('packageBookingIdInput', 'packageTableForm', '@item.PackageBookingId')" />
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <input type="submit" class="btn btn-danger" name="command" value="Cancel" onclick="onCancelClick('packageBookingIdInput', 'packageTableForm', '@item.PackageBookingId')" />
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    function onCancelClick(bookingInputId, submitFormId, bookingId) {
+        var isConfirmed = window.confirm("Are you sure you want to cancel your booking?");
+
+        if (isConfirmed) {
+            submitForm(bookingInputId, submitFormId, bookingId)
+        }
+    }
+
+    function submitForm(bookingInputId, submitFormId, bookingId) {
+        var form = document.getElementById(submitFormId);
+        document.getElementById(bookingInputId).value = bookingId;
+        form.submit();
+    }
+</script>
+```
+
+### 5.4.2 [`ViewBookings.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml.cs)
 
 ```csharp
 using asp_net_core_web_app_authentication_authorisation.Models;
@@ -2015,5 +2187,552 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 ```
 
 ## 5.5 Files for hotel, tour, and package Edit Bookings
+
+### 5.5.1 [`EditHotelBooking.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditHotelBooking.cshtml)
+
+```csharp
+@page
+@model EditHotelBookingModel
+@{
+    ViewData["Title"] = "EditHotelBooking";
+}
+
+<h2>Edit Hotel Booking</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="hotelSearchForm" method="post">
+        <input type="hidden" asp-for="EditBooking.HotelBookingId" value="@Model.EditBooking.HotelBookingId" />
+        <hr />
+        <div class="form-group">
+            <label asp-for="EditBooking.CheckInDate">Select check-in date:</label>
+            <input asp-for="EditBooking.CheckInDate" type="date" class="form-control" value="@Model.EditBooking.CheckInDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.CheckInDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="EditBooking.CheckInDate">Select check-out date:</label>
+            <input asp-for="EditBooking.CheckOutDate" type="date" class="form-control" value="@Model.EditBooking.CheckOutDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.CheckOutDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Room type:</label>
+            <input type="text" value="@Model.EditBooking.RoomType" disabled/>
+        </div>
+        <div class="form-group">
+            <label>Hotel:</label>
+            <input type="text" value="@Model.EditBooking.HotelsList.First().Name" disabled />
+        </div>
+        <p class="text-danger">@Model.EditBooking.ErrorMessage</p>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" name="command" value="Modify" />
+        </div>
+</form>
+```
+
+### 5.5.2 [`EditHotelBooking.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditHotelBooking.cshtml.cs)
+
+```csharp
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class EditHotelBookingModel : PageModel
+    {
+        [BindProperty]
+        public EditBookingModel EditBooking { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public EditHotelBookingModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            EditBooking = new EditBookingModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class EditBookingModel
+        {
+            [Required(ErrorMessage = "Please select a check-in date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check in date")]
+            public DateTime CheckInDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a check-out date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check out date")]
+            public DateTime CheckOutDate { get; set; }
+
+            public string RoomType { get; set; }
+
+            public List<Hotel> HotelsList { get; set; } = new List<Hotel>();
+
+            public string HotelBookingId { get; set; }
+
+            public string ErrorMessage { get; set; }
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            var HotelBookingIdValue = Request.Query["hotelBookingId"];
+            var HotelBookingId = new Guid(HotelBookingIdValue.ToString());
+
+            var hotelBooking = await _dbContext.HotelBookings
+                .Where(hb => hb.HotelBookingId == HotelBookingId)
+                .Include(hb => hb.Hotel)
+                .FirstOrDefaultAsync();
+
+            EditBooking.CheckInDate = hotelBooking.CheckInDate;
+            EditBooking.CheckOutDate = hotelBooking.CheckOutDate;
+            EditBooking.RoomType = hotelBooking.Hotel.RoomType;
+            EditBooking.HotelsList.Add(hotelBooking.Hotel);
+
+            EditBooking.HotelBookingId = HotelBookingIdValue;
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            EditBooking.ErrorMessage = null;
+
+            var HotelBookingIdValue = Request.Query["hotelBookingId"];
+            var HotelBookingId = new Guid(HotelBookingIdValue.ToString());
+
+            var HotelBooking = await _dbContext.HotelBookings
+                .Where(hb => hb.HotelBookingId == HotelBookingId)
+                .Include(hb => hb.Hotel)
+                .FirstOrDefaultAsync();
+
+            var CurrentUser = await _userManager.GetUserAsync(User);
+
+            var HotelAvailability = await _dbContext.HotelAvailabilities
+                .Where(ha =>
+                    ha.HotelId == HotelBooking.HotelId &&
+                    ha.AvailableFrom <= EditBooking.CheckInDate &&
+                    ha.AvailableTo >= EditBooking.CheckOutDate)
+                .Select(ha => ha.Hotel)
+                .Distinct()
+                .ToListAsync();
+
+            if (HotelAvailability.Count == 1)
+            {
+                HotelBooking.CheckInDate = EditBooking.CheckInDate;
+                HotelBooking.CheckOutDate = EditBooking.CheckOutDate;
+
+                _dbContext.HotelBookings.Update(HotelBooking);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/Payment", new
+                {
+                    bookingId = HotelBookingIdValue,
+                    bookingType = "hotel"
+                });
+            }
+            else
+            {
+                EditBooking.ErrorMessage = "Hotels not available for selected dates";
+
+                EditBooking.HotelsList.Add(HotelBooking.Hotel);
+                EditBooking.CheckInDate = EditBooking.CheckInDate;
+                EditBooking.CheckOutDate = EditBooking.CheckOutDate;
+                EditBooking.RoomType = HotelBooking.Hotel.RoomType;
+
+                return Page();
+            }
+        }
+    }
+}
+```
+
+### 5.5.3 [`EditTourBooking.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditTourBooking.cshtml)
+
+```csharp
+@page
+@model EditTourBookingModel
+@{
+    ViewData["Title"] = "EditTourBooking";
+}
+
+<h2>Edit Tour Booking</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="tourSearchForm" method="post">
+        <input type="hidden" asp-for="EditBooking.TourBookingId" value="@Model.EditBooking.TourBookingId" />
+        <hr />
+        <div class="form-group">
+            <label asp-for="EditBooking.TourStartDate">Select start date:</label>
+            <input asp-for="EditBooking.TourStartDate" type="date" class="form-control" value="@Model.EditBooking.TourStartDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.TourStartDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="EditBooking.TourEndDate">Select end date:</label>
+            <input asp-for="EditBooking.TourEndDate" type="date" class="form-control" value="@Model.EditBooking.TourEndDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.TourEndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Tour:</label>
+            <input type="text" value="@Model.EditBooking.ToursList.First().Name" disabled />
+        </div>
+        <p class="text-danger">@Model.EditBooking.ErrorMessage</p>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" name="command" value="Modify" />
+        </div>
+</form>
+```
+
+### 5.5.4 [`EditTourBooking.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditTourBooking.cshtml.cs)
+
+```csharp
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class EditTourBookingModel : PageModel
+    {
+        [BindProperty]
+        public EditBookingModel EditBooking { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public EditTourBookingModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            EditBooking = new EditBookingModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class EditBookingModel
+        {
+            [Required(ErrorMessage = "Please select a tour start date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour start date")]
+            public DateTime TourStartDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a tour end date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour end date")]
+            public DateTime TourEndDate { get; set; }
+
+            public List<Tour> ToursList { get; set; } = new List<Tour>();
+
+            public string TourBookingId { get; set; }
+
+            public string ErrorMessage { get; set; }
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            var TourBookingIdValue = Request.Query["tourBookingId"];
+            var TourBookingId = new Guid(TourBookingIdValue.ToString());
+
+            var tourBooking = await _dbContext.TourBookings
+                .Where(hb => hb.TourBookingId == TourBookingId)
+                .Include(hb => hb.Tour)
+                .FirstOrDefaultAsync();
+
+            EditBooking.TourStartDate = tourBooking.TourStartDate;
+            EditBooking.TourEndDate = tourBooking.TourEndDate;
+            EditBooking.ToursList.Add(tourBooking.Tour);
+
+            EditBooking.TourBookingId = TourBookingIdValue;
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            EditBooking.ErrorMessage = null;
+
+            var TourBookingIdValue = Request.Query["tourBookingId"];
+            var TourBookingId = new Guid(TourBookingIdValue.ToString());
+
+            var TourBooking = await _dbContext.TourBookings
+                .Where(hb => hb.TourBookingId == TourBookingId)
+                .Include(hb => hb.Tour)
+                .FirstOrDefaultAsync();
+
+            var CurrentUser = await _userManager.GetUserAsync(User);
+
+            var TourAvailability = await _dbContext.TourAvailabilities
+                .Where(ta =>
+                    ta.TourId == TourBooking.TourId &&
+                    ta.AvailableFrom <= EditBooking.TourStartDate &&
+                    ta.AvailableTo >= EditBooking.TourEndDate)
+                .Select(ha => ha.Tour)
+                .Distinct()
+                .ToListAsync();
+
+            if (TourAvailability.Count == 1)
+            {
+                TourBooking.TourStartDate = EditBooking.TourStartDate;
+                TourBooking.TourEndDate = EditBooking.TourEndDate;
+
+                _dbContext.TourBookings.Update(TourBooking);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/Payment", new
+                {
+                    bookingId = TourBookingIdValue,
+                    bookingType = "tour"
+                });
+            }
+            else
+            {
+                EditBooking.ErrorMessage = "Tours not available for selected dates";
+
+                EditBooking.ToursList.Add(TourBooking.Tour);
+                EditBooking.TourStartDate = EditBooking.TourStartDate;
+                EditBooking.TourEndDate = EditBooking.TourEndDate;
+
+                return Page();
+            }
+        }
+    }
+}
+```
+
+### 5.5.5 [`EditPackageBooking.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditPackageBooking.cshtml)
+
+```csharp
+@page
+@model EditPackageBookingModel
+@{
+    ViewData["Title"] = "EditPackageBooking";
+}
+
+<h2>Edit Package Booking</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="packageBookForm" method="post">
+    <input type="hidden" asp-for="EditBooking.PackageBookingId" value="@Model.EditBooking.PackageBookingId" />
+        <hr />
+        <div class="form-group">
+            <label asp-for="EditBooking.CheckInDate">Select check-in date:</label>
+            <input asp-for="EditBooking.CheckInDate" type="date" class="form-control" value="@Model.EditBooking.CheckInDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.CheckInDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="EditBooking.CheckInDate">Select check-out date:</label>
+            <input asp-for="EditBooking.CheckOutDate" type="date" class="form-control" value="@Model.EditBooking.CheckOutDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.CheckOutDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Room type:</label>
+            <input type="text" value="@Model.EditBooking.RoomType" disabled/>
+        </div>
+        <div class="form-group">
+            <label>Hotel:</label>
+            <input type="text" value="@Model.EditBooking.HotelsList.First().Name" disabled />
+        </div>
+        <hr />
+        <div class="form-group">
+            <label asp-for="EditBooking.TourStartDate">Select start date:</label>
+            <input asp-for="EditBooking.TourStartDate" type="date" class="form-control" value="@Model.EditBooking.TourStartDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.TourStartDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="EditBooking.TourEndDate">Select end date:</label>
+            <input asp-for="EditBooking.TourEndDate" type="date" class="form-control" value="@Model.EditBooking.TourEndDate.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="EditBooking.TourEndDate" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Tour:</label>
+            <input type="text" value="@Model.EditBooking.ToursList.First().Name" disabled />
+        </div>
+        <p class="text-danger">@Model.EditBooking.ErrorMessage</p>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" name="command" value="Modify" />
+        </div>
+</form>
+```
+
+### 5.5.6 [`EditPackageBooking.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditPackageBooking.cshtml.cs)
+
+```csharp
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class EditPackageBookingModel : PageModel
+    {
+        [BindProperty]
+        public EditBookingModel EditBooking { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public EditPackageBookingModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            EditBooking = new EditBookingModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class EditBookingModel
+        {
+            public string PackageBookingId { get; set; }
+
+            [Required(ErrorMessage = "Please select a check-in date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check in date")]
+            public DateTime CheckInDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a check-out date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Check out date")]
+            public DateTime CheckOutDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a room type")]
+            [DataType(DataType.Text)]
+            [Display(Name = "Room type")]
+            public string RoomType { get; set; }
+
+            public List<SelectListItem> RoomTypes { get; set; } = new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Value = "single",
+                    Text = "Single"
+                },
+                new SelectListItem
+                {
+                    Value = "double",
+                    Text = "Double"
+                },
+                new SelectListItem
+                {
+                    Value = "family suite",
+                    Text = "Family Suite"
+                }
+            };
+
+            public List<Hotel> HotelsList { get; set; } = new List<Hotel>();
+
+            [Required(ErrorMessage = "Please select a tour start date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour start date")]
+            public DateTime TourStartDate { get; set; }
+
+            [Required(ErrorMessage = "Please select a tour end date")]
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Tour end date")]
+            public DateTime TourEndDate { get; set; }
+
+            public List<Tour> ToursList { get; set; } = new List<Tour>();
+
+            public string ErrorMessage { get; set; }
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            var PackageBookingIdValue = Request.Query["packageBookingId"];
+            var PackageBookingId = new Guid(PackageBookingIdValue.ToString());
+
+            var packageBooking = await _dbContext.PackageBookings
+                .Where(pb => pb.PackageBookingId == PackageBookingId)
+                .Include(pb => pb.Hotel)
+                .Include(pb => pb.Tour)
+                .FirstOrDefaultAsync();
+
+            EditBooking.CheckInDate = packageBooking.CheckInDate;
+            EditBooking.CheckOutDate = packageBooking.CheckOutDate;
+            EditBooking.RoomType = packageBooking.Hotel.RoomType;
+            EditBooking.HotelsList.Add(packageBooking.Hotel);
+
+            EditBooking.TourStartDate = packageBooking.TourStartDate;
+            EditBooking.TourEndDate = packageBooking.TourEndDate;
+            EditBooking.ToursList.Add(packageBooking.Tour);
+
+            EditBooking.PackageBookingId = PackageBookingIdValue;
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            EditBooking.ErrorMessage = null;
+
+            var PackageBookingIdValue = Request.Query["packageBookingId"];
+            var PackageBookingId = new Guid(PackageBookingIdValue.ToString());
+
+            var packageBooking = await _dbContext.PackageBookings
+                .Where(pb => pb.PackageBookingId == PackageBookingId)
+                .Include(pb => pb.Hotel)
+                .Include(pb => pb.Tour)
+                .FirstOrDefaultAsync();
+
+            var CurrentUser = await _userManager.GetUserAsync(User);
+
+            var hotelAvailability = await _dbContext.HotelAvailabilities
+                .Where(ha =>
+                    ha.HotelId == packageBooking.HotelId &&
+                    ha.AvailableFrom <= EditBooking.CheckInDate &&
+                    ha.AvailableTo >= EditBooking.CheckOutDate)
+                .Select(ha => ha.Hotel)
+                .Distinct()
+                .ToListAsync();
+
+            var tourAvailability = await _dbContext.TourAvailabilities
+                .Where(ta =>
+                    ta.TourId == packageBooking.TourId &&
+                    ta.AvailableFrom <= EditBooking.TourStartDate &&
+                    ta.AvailableTo >= EditBooking.TourEndDate)
+                .Select(ha => ha.Tour)
+                .Distinct()
+                .ToListAsync();
+
+            if (hotelAvailability.Count == 1 && tourAvailability.Count == 1)
+            {
+                packageBooking.CheckInDate = EditBooking.CheckInDate;
+                packageBooking.CheckOutDate = EditBooking.CheckOutDate;
+
+                packageBooking.TourStartDate = EditBooking.TourStartDate;
+                packageBooking.TourEndDate = EditBooking.TourEndDate;
+
+                _dbContext.PackageBookings.Update(packageBooking);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/Payment", new
+                {
+                    bookingId = PackageBookingIdValue,
+                    bookingType = "package"
+                });
+            }
+            else
+            {
+                EditBooking.ErrorMessage = "Hotels and/or Tours not available for selected dates";
+
+                EditBooking.HotelsList.Add(packageBooking.Hotel);
+                EditBooking.CheckInDate = EditBooking.CheckInDate;
+                EditBooking.CheckOutDate = EditBooking.CheckOutDate;
+                EditBooking.RoomType = packageBooking.Hotel.RoomType;
+
+                EditBooking.ToursList.Add(packageBooking.Tour);
+                EditBooking.TourStartDate = EditBooking.TourStartDate;
+                EditBooking.TourEndDate = EditBooking.TourEndDate;
+
+                return Page();
+            }
+        }
+    }
+}
+```
 
 # 6 References
