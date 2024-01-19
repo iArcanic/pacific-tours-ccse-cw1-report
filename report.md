@@ -560,7 +560,141 @@ For more detail, see Appendix [5.4](#54-files-for-view-bookings) for the content
 
 ## 3.4 Key requirement 4: Edit Bookings
 
-For more detail, see Appendix () for the content of all files relating to edit bookings.
+This requirement entails implementing a modification form for any existing bookings displayed in the "ViewBookings" page. Upon the "Edit" button click, they should be redirected to the appropriate edit form and upon modification, the "ViewBookings" page should update with the new information.
+
+This form essentially derives from the Bookings page form, but without the tab styling – since for each page, only one entity is required. The form below is simple and self-explanatory, with just the required input values. One thing however, is that the modification of the user's room type and choice of hotel has been disabled. This assumption has been taken under the consideration of the business limits, in which they can only accomodate the modification of the check-in and check-out dates.
+
+```html
+<h2>Edit Hotel Booking</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="hotelSearchForm" method="post">
+  <input
+    type="hidden"
+    asp-for="EditBooking.HotelBookingId"
+    value="@Model.EditBooking.HotelBookingId"
+  />
+  <hr />
+  <div class="form-group">
+    <label asp-for="EditBooking.CheckInDate">Select check-in date:</label>
+    <input asp-for="EditBooking.CheckInDate" type="date" class="form-control"
+    value="@Model.EditBooking.CheckInDate.ToString("yyyy-MM-dd")" />
+    <span
+      asp-validation-for="EditBooking.CheckInDate"
+      class="text-danger"
+    ></span>
+  </div>
+  <div class="form-group">
+    <label asp-for="EditBooking.CheckInDate">Select check-out date:</label>
+    <input asp-for="EditBooking.CheckOutDate" type="date" class="form-control"
+    value="@Model.EditBooking.CheckOutDate.ToString("yyyy-MM-dd")" />
+    <span
+      asp-validation-for="EditBooking.CheckOutDate"
+      class="text-danger"
+    ></span>
+  </div>
+  <div class="form-group">
+    <label>Room type:</label>
+    <input type="text" value="@Model.EditBooking.RoomType" disabled />
+  </div>
+  <div class="form-group">
+    <label>Hotel:</label>
+    <input
+      type="text"
+      value="@Model.EditBooking.HotelsList.First().Name"
+      disabled
+    />
+  </div>
+  <p class="text-danger">@Model.EditBooking.ErrorMessage</p>
+  <div class="form-group">
+    <input
+      type="submit"
+      class="btn btn-primary"
+      name="command"
+      value="Modify"
+    />
+  </div>
+</form>
+```
+
+Here, when the page loads, this `OnGet` method attempts to take the `hotelBookingId` from the URL query parameter. After converting that to a GUID, it then attempts to find the relevant `Hotel` object based on that ID via getting the relevant `HotelBooking` record. From that, it pre-populates the form with the existing ```HotelBooking```.
+
+```csharp
+public async Task<IActionResult> OnGet()
+{
+    var HotelBookingIdValue = Request.Query["hotelBookingId"];
+    var HotelBookingId = new Guid(HotelBookingIdValue.ToString());
+
+    var hotelBooking = await _dbContext.HotelBookings
+        .Where(hb => hb.HotelBookingId == HotelBookingId)
+        .Include(hb => hb.Hotel)
+        .FirstOrDefaultAsync();
+
+    EditBooking.CheckInDate = hotelBooking.CheckInDate;
+    EditBooking.CheckOutDate = hotelBooking.CheckOutDate;
+    EditBooking.RoomType = hotelBooking.Hotel.RoomType;
+    EditBooking.HotelsList.Add(hotelBooking.Hotel);
+
+    EditBooking.HotelBookingId = HotelBookingIdValue;
+
+    return Page();
+}
+```
+
+When the form is submitted, the `OnPostAsync` function, similar to the `OnGet` function, aims to get the `HotelBookingId` via the URL query parameter, and converts that to a GUID. Using that, it retrieves the relevant `HotelBooking` record's `Hotel` object. Using that, it attempts to find that specific hotel's availability and returns that `Hotel` object. In the case when the `HotelAvailability` list is populated with at least one item (a record), i.e. a hotel with that availability exists, it then updates the `CheckInDate` and `CheckOutDates` of that record. Upon modification, a page redirection is made to "Payments", where the booking ID along with the entity type is passed via the URL query parameter. If in the case however that the `HotelAvailability` variable is zero, then an appropriate error message is displayed – to the one which is bound to the client-side element – and the input fields are once again populated with the initial booking parameters.
+
+```csharp
+public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+{
+    EditBooking.ErrorMessage = null;
+
+    var HotelBookingIdValue = Request.Query["hotelBookingId"];
+    var HotelBookingId = new Guid(HotelBookingIdValue.ToString());
+
+    var HotelBooking = await _dbContext.HotelBookings
+        .Where(hb => hb.HotelBookingId == HotelBookingId)
+        .Include(hb => hb.Hotel)
+        .FirstOrDefaultAsync();
+
+    var CurrentUser = await _userManager.GetUserAsync(User);
+
+    var HotelAvailability = await _dbContext.HotelAvailabilities
+        .Where(ha =>
+            ha.HotelId == HotelBooking.HotelId &&
+            ha.AvailableFrom <= EditBooking.CheckInDate &&
+            ha.AvailableTo >= EditBooking.CheckOutDate)
+        .Select(ha => ha.Hotel)
+        .Distinct()
+        .ToListAsync();
+
+    if (HotelAvailability.Count == 1)
+    {
+        HotelBooking.CheckInDate = EditBooking.CheckInDate;
+        HotelBooking.CheckOutDate = EditBooking.CheckOutDate;
+
+        _dbContext.HotelBookings.Update(HotelBooking);
+        await _dbContext.SaveChangesAsync();
+
+        return RedirectToPage("/Payment", new
+        {
+            bookingId = HotelBookingIdValue,
+            bookingType = "hotel"
+        });
+    }
+    else
+    {
+        EditBooking.ErrorMessage = "Hotels not available for selected dates";
+
+        EditBooking.HotelsList.Add(HotelBooking.Hotel);
+        EditBooking.CheckInDate = EditBooking.CheckInDate;
+        EditBooking.CheckOutDate = EditBooking.CheckOutDate;
+        EditBooking.RoomType = HotelBooking.Hotel.RoomType;
+
+        return Page();
+    }
+}
+```
+
+For more detail, see Appendix ([5.5](#55-files-for-edit-bookings)) for the content of all files relating to edit bookings.
 
 # 4 Cyber security implementation
 
