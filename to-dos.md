@@ -10,3 +10,5 @@
 - [ ] Talk about input validation
 - [ ] Add image of Git repo under appendices link
 - [ ] Talk about making a HotelDiscount class and that its also extendable for TourDiscount class in the future.
+- [ ] Cross-site request forgery, route data protection, user roles
+- [ ] Add screenshots to appendix and reference them in text

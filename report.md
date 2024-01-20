@@ -43,7 +43,7 @@ Throughout, the goal was to promote code that is maintainable, extendable, and a
 - Implementing input validation for all forms.
 - Ensuring database parameters are properly formatted, i.e. sanitised.
 
-The sprints were broken down into the following as so, assuming that the project took nearly 2-months. Furthermore, a Kanban-style Jira board provided more of a visual representations in the form of tickets to complete, as opposed to the tabular format presented below.
+The sprints were broken down into the following as so, assuming that the project took nearly 2-months. Furthermore, a Kanban-style Jira board provided more of a visual representation in the form of tickets to complete, as opposed to the tabular format presented below.
 
 ### 2.2.1 Sprint 1
 
@@ -111,7 +111,7 @@ This extends ASP.NET's in-built `IdentityUser`, meaning that additional properti
 
 Next, using ASP.NET's scaffolding, automatic files for Login (`Login.cshtml` and `Login.cshtml.cs`), files for Registration (`Registration.cshtml` and `Registration.cshtml.cs`) as well as Logout (`Logout.cshtml` and `Logout.cshtml.cs`) are generated with their relevant logic in their `OnPostAsync` methods. Then based on the `.cshtml` form submit, the `OnPostAsync` function, checks the user using `SignInManager` class (for Login and Logout) and `UserManager` class (for Registration). For example, looking at the `Login.cshtml.cs`'s `OnPostAsync` method, first checks if the `ModelState` is valid. If so, it attempts to get the user using `PasswordSignInAsync` to find the user from the database and uses the await keyword since the function is of type `async`. Based on that, it informs the UI with the relevant messages as well as redirection to the appropriate pages.
 
-```csharp
+```C#
 public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -145,7 +145,7 @@ public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 
 In general, since the logic for these is repetitive and implemented by default via scaffolding, they do not need to be explored in depth. An abstract explanation of these classes first defines the bind properties that link to the elements in the relevant `.cshtml` page. For example, in the `Login.cshtml.cs` file, the `InputModel` class defines these properties and can bind to the `Login.cshtml` page via the `[BindProperty]` data annotation. Furthermore, the annotations for the properties in the `InputModel` class serve as input validation.
 
-```csharp
+```C#
 [BindProperty]
 public InputModel Input { get; set; }
 
@@ -176,7 +176,7 @@ Since the UI and backend logic is virtually similar to each other, looking at th
 
 Starting with the UI, here, towards the top, the `asp-page-handler` attribute of the form element corresponds to `HotelSearch`, i.e. the correct `OnPostAsync` method in the server-side code. This also means that the URL will have a new query parameter, `handler=HotelSearch`, making it easy to distinguish between what tab is selected. Furthermore, there is the necessary validation from the service which is referenced here through the `asp-validation` element tags.
 
-```csharp
+```html
 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 <form id="hotelSearchForm" method="post" asp-page-handler="HotelSearch">
     <div id="Hotels" class="tabcontent">
@@ -223,7 +223,7 @@ Here below, are the relevant JavaScript functions that are referenced in the cod
 
 As mentioned previously, since the `OnPostAsync` function reloads the page, using the page handler, this `switch` statement checks what form is being submitted and automatically selects the relevant tab as default with the `onClick()` method.
 
-```javascript
+```Javascript
 let params = new URL(document.location).searchParams;
 let handler = params.get("handler");
 
@@ -244,7 +244,7 @@ switch (handler) {
 
 Here, this method checks whether the dropdown box is not empty and displays an appropriate error message by referencing a paragraph tag within the form. It only then submits the form dynamically if the `selectBoxValue` isn't null.
 
-```javascript
+```Javascript
 function submitHotelSearchForm() {
   var dropdownErrorMessage = document.getElementById(
     "hotelsDropdownErrorMessage"
@@ -268,7 +268,7 @@ The following series of functions are related to cost calculations for all three
 
 The first function, `calculateTotal(dropdown, fromDate, toDate)`, extracts the cost value from the dropdown box and calculates the cost of the hotel or tour per night/day by taking the duration of days in between the inputted dates.
 
-```javascript
+```Javascript
 function calculateTotal(dropdown, fromDate, toDate) {
   var selectedDropdown = document.getElementById(dropdown);
   var selectedOption = selectedDropdown.options[selectedDropdown.selectedIndex];
@@ -290,7 +290,7 @@ function calculateTotalCost(dropdown, fromDate, toDate, totalCostMessageId) {
 
 This next function, is specifically for calculating the total cost of a package since it contains both a tour and hotel. Since logic doesn't need to be repeated, it utilises the previous function to calculate the overall cost.
 
-```javascript
+```Javascript
 function calculateTotalPackageCost() {
   var packageHotelCost = calculateTotal(
     "packageHotelsDropdownId",
@@ -312,7 +312,7 @@ function calculateTotalPackageCost() {
 
 Finally, upon page reload, an attached event listener upon page reload will check which tab is active and apply the total cost calculation dynamically. This uses the `.className` attribute of the tab switching code.
 
-```javascript
+```Javascript
 window.addEventListener("load", function () {
   if (document.getElementById("HotelTab").className == "tablinks active") {
     calculateTotalCost(
@@ -340,7 +340,7 @@ window.addEventListener("load", function () {
 
 Moving onto the server-side function, again, the bind model for the client-side properties are the same. Taking the `OnPostHotelSearchAsync` function as the logic for all three is consistent, it again first checks if the `ModelState`, which is the logic and client-side elements, are valid.
 
-```csharp
+```C#
 public async Task<IActionResult> OnPostHotelSearchAsync(string command, string returnUrl = null)
 {
     if (!ModelState.IsValid)
@@ -351,7 +351,7 @@ public async Task<IActionResult> OnPostHotelSearchAsync(string command, string r
 
 Then, it checks if the button clicked is search, via the `command` parameter. This references the `name=command` element for the search button on the client-side. Using the database context, it checks for all available hotels based on the user's dates and returns the found `Hotel` object. It then binds this into the `HotelList` to the client-side element.
 
-```csharp
+```C#
 if (command == "Search")
 {
 var availableHotels = await _dbContext.HotelAvailabilities
@@ -368,9 +368,9 @@ HotelSearch.HotelsList = availableHotels;
 return Page();
 ```
 
-However, in the else block, i.e. the "Book" button is clicked, a new hotel booking is made, referencing the `HotelBooking` model. This model takes in an unique ID, i.e. the HotelBookingId as a GUID data type, a reference to the `Hotel` which the user selected, the dates and a reference to the current user found via the `IdentityUser`'s `UserManager` class. It is then added to the `HotelBookings` table in the database. Finally, a redirection is made to the "/Payment" page with the booking ID and type of booking (hotel, tour, or package) as a query parameter in the URL. This is then extracted in the payments page for further use.
+However, in the else block, i.e. the "Book" button is clicked, a new hotel booking is made, referencing the `HotelBooking` model. This model takes in a unique ID, i.e. the HotelBookingId as a GUID data type, a reference to the `Hotel` that the user selected, the dates, and a reference to the current user found via the `IdentityUser`'s `UserManager` class. It is then added to the `HotelBookings` table in the database. Finally, a redirection is made to the "/Payment" page with the booking ID and type of booking (hotel, tour, or package) as a query parameter in the URL. This is then extracted from the payments page for further use.
 
-```csharp
+```C#
 else
 {
     var SelectedHotelId = new Guid(Request.Form["hotels"]);
@@ -403,11 +403,11 @@ For more detail, see Appendix [5.3](#53-files-for-hotel-tour-and-package-booking
 
 ## 3.3 Key requirement 3: View Bookings
 
-For this requirement, any hotels, tours or packages booked by the user should be displayed promptly after a successful payment. This page should hold the latest details of bookings, so even if they are edited (see [3.4](#34-key-requirement-4-edit-bookings)) the most up-to-date details should be displayed.
+For this requirement, any hotels, tours, or packages booked by the user should be displayed promptly after a successful payment. This page should hold the latest details of bookings, so even if they are edited (see [3.4](#34-key-requirement-4-edit-bookings)) the most up-to-date details should be displayed.
 
-Starting with the client side code, again, just looking at the hotels should suffice since tours and packages follow the same logic.
+Starting with the client-side code, again, just looking at the hotels should suffice since tours and packages follow the same logic.
 
-Here, inspired by the Bookings page, the `asp-page-handler` element ensures that on form submit, the URL handler parameter is `HotelTable`, helping it to be differentiated from the other forms on the page. The UI is tabular based, so it takes on the headings similar to the properties of the `Hotel` model class. Using in line C#, the rows can be dynamically updated via a `foreach` loop that iterated through a list of type `HotelBookings` that is populated dynamically in the server-side. The row for the hotel cost does a calculation, multiplying it by the duration of days. The days obviously being the difference between the `HotelBooking.CheckInDate` and the `HotelBooking.CheckOutDate`.
+Here, inspired by the Bookings page, the `asp-page-handler` element ensures that on form submit, the URL handler parameter is `HotelTable`, helping it to be differentiated from the other forms on the page. The UI is tabular-based, so it takes on the headings similar to the properties of the `Hotel` model class. Using in line C#, the rows can be dynamically updated via a `foreach` loop that iterated through a list of type `HotelBookings` that is populated dynamically in the server-side. The row for the hotel cost does a calculation, multiplying it by the duration of days. The days being the difference between the `HotelBooking.CheckInDate` and the `HotelBooking.CheckOutDate`.
 
 ```html
 <form id="hotelTableForm" method="post" asp-page-handler="HotelTable">
@@ -474,7 +474,7 @@ Here, inspired by the Bookings page, the `asp-page-handler` element ensures that
 
 For each table entry, there are two additional buttons. One for editing and the other for the cancellation of bookings. These buttons are bound to the below JavaScript functions. Upon the cancellation button, a dialog box appears asking the user for confirmation. It then dynamically submits the form based on that, via the `submitForm` function.
 
-```javascript
+```Javascript
 function onCancelClick(bookingInputId, submitFormId, bookingId) {
   var isConfirmed = window.confirm(
     "Are you sure you want to cancel your booking?"
@@ -494,7 +494,7 @@ function submitForm(bookingInputId, submitFormId, bookingId) {
 
 For the server-side component for this page, has an `OnGet` function, that executes code on page reload. First, the ID of the current user is required, and using this, a query to the database is made to retrieve all relevant bookings, of all types i.e. hotels, tours and packages. The variable which are bound to the client side take on the value of these variables so that it can be displayed on the page. Finally, the `successMessage` element takes on the query parameter in the URL from the payments page to provide user feedback.
 
-```csharp
+```C#
 public async Task<IActionResult> OnGet()
 {
     var CurrentUser = await _userManager.GetUserAsync(User);
@@ -529,7 +529,7 @@ public async Task<IActionResult> OnGet()
 
 Each table in the ViewBookings page has its own `PostAsync` function with the same logic as demonstrated below. It first attempts to take the `HotelBookingId` from the client-side form to make a request to the database to retrieve the correct `HotelBooking`. The `IsCancelled` property is set to the boolean value of `true` and the page redirects to "/ViewBookings". However if the "Edit" button is clicked, it redirects to the appropriate EditBooking page (see [3.4](#34-key-requirement-4-edit-bookings)) and passes the appropriate `HotelBookingId` as a URL query parameter.
 
-```csharp
+```C#
 public async Task<IActionResult> OnPostHotelTableAsync(string command, string returnUrl = null)
 {
     if (command == "Cancel")
@@ -560,9 +560,9 @@ For more detail, see Appendix [5.4](#54-files-for-view-bookings) for the content
 
 ## 3.4 Key requirement 4: Edit Bookings
 
-This requirement entails implementing a modification form for any existing bookings displayed in the "ViewBookings" page. Upon the "Edit" button click, they should be redirected to the appropriate edit form and upon modification, the "ViewBookings" page should update with the new information.
+This requirement entails implementing a modification form for any existing bookings displayed on the "ViewBookings" page. Upon the "Edit" button click, they should be redirected to the appropriate edit form, and upon modification, the "ViewBookings" page should update with the new information.
 
-This form essentially derives from the Bookings page form, but without the tab styling – since for each page, only one entity is required. The form below is simple and self-explanatory, with just the required input values. One thing however, is that the modification of the user's room type and choice of hotel has been disabled. This assumption has been taken under the consideration of the business limits, in which they can only accomodate the modification of the check-in and check-out dates.
+This form essentially derives from the Bookings page form, but without the tab styling – since for each page, only one entity is required. The form below is simple and self-explanatory, with just the required input values. One thing however is that the modification of the user's room type and choice of hotel has been disabled. This assumption has been taken under the consideration of the business limits, in which they can only accommodate the modification of the check-in and check-out dates.
 
 ```html
 <h2>Edit Hotel Booking</h2>
@@ -618,7 +618,7 @@ This form essentially derives from the Bookings page form, but without the tab s
 
 Here, when the page loads, this `OnGet` method attempts to take the `hotelBookingId` from the URL query parameter. After converting that to a GUID, it then attempts to find the relevant `Hotel` object based on that ID via getting the relevant `HotelBooking` record. From that, it pre-populates the form with the existing ```HotelBooking```.
 
-```csharp
+```C#
 public async Task<IActionResult> OnGet()
 {
     var HotelBookingIdValue = Request.Query["hotelBookingId"];
@@ -642,7 +642,7 @@ public async Task<IActionResult> OnGet()
 
 When the form is submitted, the `OnPostAsync` function, similar to the `OnGet` function, aims to get the `HotelBookingId` via the URL query parameter, and converts that to a GUID. Using that, it retrieves the relevant `HotelBooking` record's `Hotel` object. Using that, it attempts to find that specific hotel's availability and returns that `Hotel` object. In the case when the `HotelAvailability` list is populated with at least one item (a record), i.e. a hotel with that availability exists, it then updates the `CheckInDate` and `CheckOutDates` of that record. Upon modification, a page redirection is made to "Payments", where the booking ID along with the entity type is passed via the URL query parameter. If in the case however that the `HotelAvailability` variable is zero, then an appropriate error message is displayed – to the one which is bound to the client-side element – and the input fields are once again populated with the initial booking parameters.
 
-```csharp
+```C#
 public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 {
     EditBooking.ErrorMessage = null;
@@ -696,7 +696,177 @@ public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 
 For more detail, see Appendix ([5.5](#55-files-for-edit-bookings)) for the content of all files relating to edit bookings.
 
-# 4 Cyber security implementation
+### 3.5 Key requirement 5: Manager role and report display
+
+For this requirement, user roles needed to be considered, and this can easily be implemented via ASP.NET Identity Framework. Within these lines, a `client`, for normal application users, and `manager`, for managerial use, have been established via ASP.NET Identity Roles in the `ApplicationDbContext` class.
+
+```C#
+var manager = new IdentityRole("manager");
+manager.NormalizedName = "manager";
+
+var client = new IdentityRole("client");
+client.NormalizedName = "client";
+
+modelBuilder.Entity<IdentityRole>().HasData(manager, client);
+```
+
+However, these need to be instantiated and configured within the `Program.cs` file. Here, policies are created within the `AddAuthorization` service, where the roles are references to the respective policy. Furthermore, when the `ApplicationUser` is added as a type in `AddDefaultIdentity`, the Identity Roles are additionally referenced.
+
+```C#
+builder.Services.AddAuthentication();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("manager"));
+    options.AddPolicy("RequireManager", policy => policy.RequireRole("client"));
+});
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => 
+    options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+```
+
+The manager's report dashboard is heavily inspired by the "ViewBookings" page to use a table format. Here additional columns have been included to give insight into user details via their full name, username, and whether that particular booking has been cancelled.
+
+```html
+<h3>Hotels</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Room Type</th>
+                        <th>Check-in Date</th>
+                        <th>Check-out Date</th>
+                        <th>Cost</th>
+                        <th>Username</th>
+                        <th>User Full Name</th>
+                        <th>Booking cancelled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ReportTable.HotelBookingsList)
+                    {
+                        <tr>
+                            <td>@item.Hotel.Name</td>
+                            <td>@item.Hotel.RoomType</td>
+                            <td>@item.CheckInDate.ToShortDateString()</td>
+                            <td>@item.CheckOutDate.ToShortDateString()</td>
+                            <td>@("£" + ((item.CheckOutDate - item.CheckInDate).Days * item.Hotel.Cost).ToString("0.00"))</td>
+                            <td>@item.ApplicationUser.UserName</td>
+                            <td>@(item.ApplicationUser.FirstName + " " + item.ApplicationUser.LastName)</td>
+                            <td>@item.IsCancelled</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+```
+
+However, the "ViewBookings" page's server-side code has to be modified. In addition to including the entity of either `Hotel`, `Tour` or `Package`, since information about that user is required, the `ApplicationUser` has been included in the LINQ query as well. Once these are pulled, they are set to the appropriate bind page variable to be displayed on the client-side.
+
+```C#
+public async Task<IActionResult> OnGet()
+{
+    var hotelBookingsList = await _dbContext.HotelBookings
+        .Include(hb => hb.Hotel)
+        .Include(hb => hb.ApplicationUser)
+        .ToListAsync();
+
+    ReportTable.HotelBookingsList = hotelBookingsList;
+
+    var tourBookingsList = await _dbContext.TourBookings
+        .Include(tb => tb.Tour)
+        .Include(hb => hb.ApplicationUser)
+        .ToListAsync();
+
+    ReportTable.TourBookingsList = tourBookingsList;
+
+    var packageBookingsList = await _dbContext.PackageBookings
+        .Include(pb => pb.Hotel)
+        .Include(pb => pb.Tour)
+        .Include(hb => hb.ApplicationUser)
+        .ToListAsync();
+
+    ReportTable.PackageBookingsList = packageBookingsList;
+
+    return Page();
+}
+```
+
+For more detail see Appendix ([5.6](#56-files-for-bookings-report-dashboard)) for the content of all files relating to the bookings report dashboard.
+
+# 4 Cybersecurity implementation
+
+## 4.1 TOTP 2FA
+
+ASP.NET identity framework itself supports default two-factor authentication, with only minimal configuration needed. The scaffolding provides the following `EnableAuthenticator.cshtml` page:
+
+More importantly, the `@section Scripts` code block contains the required JavaScript libraries for QR code generation. 
+
+```C#
+<h3>@ViewData["Title"]</h3>
+<div>
+    <p>To use an authenticator app go through the following steps:</p>
+    <ol class="list">
+        <li>
+            <p>
+                Download a two-factor authenticator app like Microsoft Authenticator for
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
+                Google Authenticator for
+                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
+                <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+            </p>
+        </li>
+        <li>
+            <p>Scan the QR Code or enter this key <kbd>@Model.SharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
+            <div id="qrCode"></div>
+            <div id="qrCodeData" data-url="@Html.Raw(Model.AuthenticatorUri)"></div>
+        </li>
+        <li>
+            <p>
+                Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
+                with a unique code. Enter the code in the confirmation box below.
+            </p>
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="send-code" method="post">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Please enter the code."/>
+                            <label asp-for="Input.Code" class="control-label form-label">Verification Code</label>
+                            <span asp-validation-for="Input.Code" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                    </form>
+                </div>
+            </div>
+        </li>
+    </ol>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript" src="~/lib/qrcode.js"></script>
+    <script type="text/javascript" src="~/js/qr.js"></script>
+}
+```
+
+Implementing this gave a further security layer on the user login side, giving them the option to generate recovery codes in the case that they forget their login credentials completely. TOTP and 2FA provides security even in the event of impersonation with the right user details [@reese2018]. Not only for security requirements, however, this implementation fosters trust with stakeholders and users, giving more of an incentive to use the system [@gupta2024].
+
+For more detail, see Appendix for all the content relating to TOTP two-factor authentication.
+
+## 4.2 Password hashing
+
+## 4.3 Authenticated user-only views
+
+## 4.4 SQL injection immunity
 
 # 5 Appendices
 
@@ -708,7 +878,7 @@ For more detail, see Appendix ([5.5](#55-files-for-edit-bookings)) for the conte
 
 ### 5.2.1 [`Login.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/Login.cshtml)
 
-```csharp
+```html
 @page
 @model LoginModel
 
@@ -758,7 +928,7 @@ For more detail, see Appendix ([5.5](#55-files-for-edit-bookings)) for the conte
 
 ### 5.2.2 [`Login.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/Login.cshtml.cs)
 
-```csharp
+```C#
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
@@ -904,7 +1074,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 
 ### 5.2.3 [`Register.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/Register.cshtml)
 
-```csharp
+```html
 @page
 @model RegisterModel
 @{
@@ -988,7 +1158,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 
 ### 5.2.4 [`Register.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/Register.cshtml.cs)
 
-```csharp
+```C#
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
@@ -1197,7 +1367,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 
 ### 5.2.5 [`Logout.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/Logout.cshtml)
 
-```csharp
+```html
 @page
 @model LogoutModel
 @{
@@ -1223,7 +1393,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 
 ### 5.2.6 [`Logout.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/Logout.cshtml.cs)
 
-```csharp
+```C#
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
@@ -1369,7 +1539,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 
 ### 5.3.2 [`Bookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Bookings.cshtml)
 
-```csharp
+```html
 @page
 @model BookingsModel
 @{
@@ -1694,7 +1864,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 
 ### 5.3.3 [`Bookings.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Bookings.cshtml.cs)
 
-```csharp
+```C#
 using asp_net_core_web_app_authentication_authorisation.Models;
 using asp_net_core_web_app_authentication_authorisation.Services;
 using Microsoft.AspNetCore.Identity;
@@ -2007,7 +2177,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.4.1 [`ViewBookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml)
 
-```csharp
+```html
 @page
 @model ViewBookingsModel
 @{
@@ -2177,7 +2347,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.4.2 [`ViewBookings.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml.cs)
 
-```csharp
+```C#
 using asp_net_core_web_app_authentication_authorisation.Models;
 using asp_net_core_web_app_authentication_authorisation.Services;
 using Microsoft.AspNetCore.Identity;
@@ -2324,7 +2494,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.5.1 [`EditHotelBooking.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditHotelBooking.cshtml)
 
-```csharp
+```html
 @page
 @model EditHotelBookingModel
 @{
@@ -2363,7 +2533,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.5.2 [`EditHotelBooking.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditHotelBooking.cshtml.cs)
 
-```csharp
+```C#
 using asp_net_core_web_app_authentication_authorisation.Models;
 using asp_net_core_web_app_authentication_authorisation.Services;
 using Microsoft.AspNetCore.Identity;
@@ -2485,7 +2655,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.5.3 [`EditTourBooking.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditTourBooking.cshtml)
 
-```csharp
+```html
 @page
 @model EditTourBookingModel
 @{
@@ -2520,7 +2690,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.5.4 [`EditTourBooking.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditTourBooking.cshtml.cs)
 
-```csharp
+```C#
 using asp_net_core_web_app_authentication_authorisation.Models;
 using asp_net_core_web_app_authentication_authorisation.Services;
 using Microsoft.AspNetCore.Identity;
@@ -2638,7 +2808,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.5.5 [`EditPackageBooking.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditPackageBooking.cshtml)
 
-```csharp
+```html
 @page
 @model EditPackageBookingModel
 @{
@@ -2692,7 +2862,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.5.6 [`EditPackageBooking.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/EditPackageBooking.cshtml.cs)
 
-```csharp
+```C#
 using asp_net_core_web_app_authentication_authorisation.Models;
 using asp_net_core_web_app_authentication_authorisation.Services;
 using Microsoft.AspNetCore.Identity;
@@ -2864,6 +3034,212 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
                 return Page();
             }
+        }
+    }
+}
+```
+
+## 5.6 Files for bookings report dashboard
+
+### 5.6.1 [`Report.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Report.cshtml)
+
+```C#
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "manager")]
+@model ReportModel
+@{
+    ViewData["Title"] = "Report";
+}
+
+<h2>Report</h2>
+<hr />
+<h3>Hotels</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Room Type</th>
+                        <th>Check-in Date</th>
+                        <th>Check-out Date</th>
+                        <th>Cost</th>
+                        <th>Username</th>
+                        <th>User Full Name</th>
+                        <th>Booking cancelled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ReportTable.HotelBookingsList)
+                    {
+                        <tr>
+                            <td>@item.Hotel.Name</td>
+                            <td>@item.Hotel.RoomType</td>
+                            <td>@item.CheckInDate.ToShortDateString()</td>
+                            <td>@item.CheckOutDate.ToShortDateString()</td>
+                            <td>@("£" + ((item.CheckOutDate - item.CheckInDate).Days * item.Hotel.Cost).ToString("0.00"))</td>
+                            <td>@item.ApplicationUser.UserName</td>
+                            <td>@(item.ApplicationUser.FirstName + " " + item.ApplicationUser.LastName)</td>
+                            <td>@item.IsCancelled</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<hr />
+<h3>Tours</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Duration (Days)</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Cost</th>
+                        <th>Username</th>
+                        <th>User Full Name</th>
+                        <th>Booking cancelled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ReportTable.TourBookingsList)
+                    {
+                        <tr>
+                            <td>@item.Tour.Name</td>
+                            <td>@item.Tour.DurationInDays</td>
+                            <td>@item.TourStartDate.ToShortDateString()</td>
+                            <td>@item.TourEndDate.ToShortDateString()</td>
+                            <td>@("£" + item.Tour.Cost)</td>
+                            <td>@item.ApplicationUser.UserName</td>
+                            <td>@(item.ApplicationUser.FirstName + " " + item.ApplicationUser.LastName)</td>
+                            <td>@item.IsCancelled</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<hr />
+<h3>Packages</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Hotel</th>
+                        <th>Room Type</th>
+                        <th>Check-in Date</th>
+                        <th>Check-out Date</th>
+                        <th>Tour</th>
+                        <th>Duration (Days)</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Total Cost</th>
+                        <th>Username</th>
+                        <th>User Full Name</th>
+                        <th>Booking cancelled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ReportTable.PackageBookingsList)
+                    {
+                        <tr>
+                            <td>@item.Hotel.Name</td>
+                            <td>@item.Hotel.RoomType</td>
+                            <td>@item.CheckInDate.ToShortDateString()</td>
+                            <td>@item.CheckOutDate.ToShortDateString()</td>
+                            <td>@item.Tour.Name</td>
+                            <td>@item.Tour.DurationInDays</td>
+                            <td>@item.TourStartDate.ToShortDateString()</td>
+                            <td>@item.TourEndDate.ToShortDateString()</td>
+                            <td>
+                                @{
+                                    var hotelCost = (item.CheckOutDate - item.CheckInDate).Days * item.Hotel.Cost;
+                                    var tourCost = (item.TourEndDate - item.TourStartDate).Days * item.Tour.Cost;
+                                    var totalCost = hotelCost + tourCost;
+                                }
+                                @("£" + totalCost.ToString("0.00"))
+                            </td>
+                            <td>@item.ApplicationUser.UserName</td>
+                            <td>@(item.ApplicationUser.FirstName + " " + item.ApplicationUser.LastName)</td>
+                            <td>@item.IsCancelled</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+```
+
+### 5.6.2 [`Report.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Report.cshtml.cs)
+
+```C#
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class ReportModel : PageModel
+    {
+        [BindProperty]
+        public ReportTableModel ReportTable { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public ReportModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            ReportTable = new ReportTableModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class ReportTableModel
+        {
+            public List<HotelBooking> HotelBookingsList { get; set; } = new List<HotelBooking>();
+            public List<TourBooking> TourBookingsList { get; set; } = new List<TourBooking>();
+            public List<PackageBooking> PackageBookingsList { get; set; } = new List<PackageBooking>();
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            var hotelBookingsList = await _dbContext.HotelBookings
+                .Include(hb => hb.Hotel)
+                .Include(hb => hb.ApplicationUser)
+                .ToListAsync();
+
+            ReportTable.HotelBookingsList = hotelBookingsList;
+
+            var tourBookingsList = await _dbContext.TourBookings
+                .Include(tb => tb.Tour)
+                .Include(hb => hb.ApplicationUser)
+                .ToListAsync();
+
+            ReportTable.TourBookingsList = tourBookingsList;
+
+            var packageBookingsList = await _dbContext.PackageBookings
+                .Include(pb => pb.Hotel)
+                .Include(pb => pb.Tour)
+                .Include(hb => hb.ApplicationUser)
+                .ToListAsync();
+
+            ReportTable.PackageBookingsList = packageBookingsList;
+
+            return Page();
         }
     }
 }
