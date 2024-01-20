@@ -970,6 +970,44 @@ Within the database, the hashing appears like so (see Appendix)
 
 ## 4.3 Authenticated user-only views
 
+Protecting website routes is critical so that authentication bypass does not occur, and users cannot manipulate and gain access to data [@telerik2023].
+
+Since there are managerial positions, in addition to just normal users, Identity Roles are added (see [3.5](#35-key-requirement-5-manager-role-and-bookings-report-display)) and thus certain pages have to be limited. In the event that the user finds themselves on a page which they are not authorised for, appropriate "access denied" page should be displayed (also through ASP.NET Identity Framework).
+
+To achieve this on specific pages, an attribute can be added at the top of Razor pages like below.
+
+```C#
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "manager")]
+```
+
+In this case, this is applied to the `Report.cshtml` page, where only the manager is allowed to access it. When attempting to access a page with the incorrect role, it redirects to the `AccessDenied.cshtml` page. If in the case the there is no authenticated user detected, it simply redirects the user to the login page, prompting them to sign in.
+
+Within the `_Layout.cshtml` shared page, this concept is applied, where based only on the authenticated user's role, specific pages are applied, with the `.IsInRole` and `IsAuthenticated` user attributes.
+
+```html
+@if (User.Identity.IsAuthenticated)
+{
+    if (User.IsInRole("client"))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-page="/Bookings">Bookings</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-page="/ViewBookings">Your Bookings</a>
+        </li>
+    }
+    else if (User.IsInRole("manager"))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="" asp-page="/Report">Report</a>
+        </li>
+    }
+}
+```
+
+For more details, see Appendix [5.8.3](#583-files-for-authenticated-user-only-views) for all the content relating to role based authenticated views.
+
 ## 4.4 SQL injection immunity
 
 # 5 Appendices
@@ -3988,7 +4026,6 @@ var QRCode;
 					_oContext.fillStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;					
 					_oContext.fillRect(nLeft, nTop, nWidth, nHeight);
 					
-					// 안티 앨리어싱 방지 처리
 					_oContext.strokeRect(
 						Math.floor(nLeft) + 0.5,
 						Math.floor(nTop) + 0.5,
@@ -4315,6 +4352,23 @@ namespace Microsoft.AspNet.Identity
         }
     }
 }
+```
+
+### 5.8.3 Files for authenticated user-only views
+
+#### 5.8.3.1 [`AccessDenied.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Areas/Identity/Pages/Account/AccessDenied.cshtml)
+
+```html
+@page
+@model AccessDeniedModel
+@{
+    ViewData["Title"] = "Access denied";
+}
+
+<header>
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">You do not have access to this resource.</p>
+</header>
 ```
 
 # 6 References
