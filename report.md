@@ -529,6 +529,8 @@ public async Task<IActionResult> OnGet()
 
 Each table in the ViewBookings page has its own `PostAsync` function with the same logic as demonstrated below. It first attempts to take the `HotelBookingId` from the client-side form to make a request to the database to retrieve the correct `HotelBooking`. The `IsCancelled` property is set to the boolean value of `true` and the page redirects to "/ViewBookings". However if the "Edit" button is clicked, it redirects to the appropriate EditBooking page (see [3.4](#34-key-requirement-4-edit-bookings)) and passes the appropriate `HotelBookingId` as a URL query parameter.
 
+It is important to note that the bookings have an `IsCancelled` property. This means that soft deletion is implemented, rather than physical record deletion, in order to avoid database problems. A downside of this however, is that the database size can increase exponentially over time, but it is the trade off taken in comparison to maintaining a secure database.
+
 ```C#
 public async Task<IActionResult> OnPostHotelTableAsync(string command, string returnUrl = null)
 {
@@ -898,6 +900,106 @@ public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 ```
 
 For more detail see Appendix ([5.7](#57-files-for-payment)) for the content of all files relating to payment.
+
+## 3.7 Key requirement 7: Discounts
+
+For this requirement, packages, which is a combination of both a `Hotel` and a `Tour`, entails a discount which is based on the `Hotel`'s room type. For example a single room incurs a 10% discount, a double 20%, and so on.
+
+A `HotelDiscount` model is therefore required, taking in a unique ID, the room type of the hotel, as well as a percentage discount. This table can then be populated manually either via data seeding or manual SQL statements.
+
+```C#
+namespace asp_net_core_web_app_authentication_authorisation.Models
+{
+    public class HotelDiscount
+    {
+        public Guid HotelDiscountId { get; set; }
+        public String RoomType { get; set; }
+        public decimal HotelDiscountPercentage { get; set; }
+    }
+}
+```
+
+To avoid editing the existing database models since and applying overriding migrations to the database, the `HotelDiscount` model is required.
+
+First, a discount list on the server-side was initialised.
+
+```C#
+public List<HotelDiscount> HotelDiscountsList { get; set; } = new List<HotelDiscount>();
+```
+
+This is then dynamically populated in the `OnGet` method:
+
+```C#
+public async Task<IActionResult> OnGet()
+{
+    PackageBook.HotelDiscountsList = await _dbContext.HotelDiscounts.ToListAsync();
+    return Page();
+}
+```
+
+As the discounts logic is only required for `PackageBookings`, within its `OnPostAsync` function, it sets the value of the results of the database query return to the page's `HotelDiscountsList`.
+
+```C#
+PackageBook.HotelDiscountsList = await _dbContext.HotelDiscounts.ToListAsync();
+```
+
+A new function in the client-side, `findDiscount()` first gets the value of each element in the dropdown select option, by value. For each dropdown option, the discount is concatenated, so using string manipulation and splitting, the discount value is extracted. And then depending upon the dropdown option selected, the relevant discount is applied.
+
+```Javascript
+function findDicount() {
+    var discount = 0
+    var singleDiscount = document.getElementById("Single").value
+    var doubleDiscount = document.getElementById("Double").value
+    var familySuiteDiscount = document.getElementById("Family Suite").value
+
+    var packageHotelRoomTypeSelected = document.getElementById("packageHotelRoomTypeDropDown")
+    var selectedRoomType = packageHotelRoomTypeSelected.options[packageHotelRoomTypeSelected.selectedIndex].textContent
+
+    switch (selectedRoomType) {
+        case "Single":
+            discount = singleDiscount;
+            break;
+        case "Double":
+            discount = doubleDiscount;
+            break;
+        case "Family Suite":
+            discount = familySuiteDiscount;
+            break;
+        default:
+            break;
+    }
+    return discount;
+}
+```
+
+This function has to modified slightly, since discounts need to be calculated. Here, the previous `findDiscount()` function is called and that amount is applied to the `packageCost` using simple percentage cost calculations. It then changes the `.innerHTML` attribute of the discount paragraph tag in the form.
+
+```Javascript
+function calculateTotalPackageCost() { 
+    var packageHotelCost = calculateTotal("packageHotelsDropdownId", "packageHotelCheckInDate", "packageHotelCheckOutDate", true);
+    var packageTourCost = calculateTotal("packageToursDropdownId", "packageTourStartDate", "packageTourEndDate", false);
+    
+    var discount = findDicount();
+    
+    var packageTotalCost = packageHotelCost + packageTourCost;
+    
+    var discountAmount = (discount / 100) * packageTotalCost;
+    var discountedTotalCost = packageTotalCost - discountAmount;
+
+    document.getElementById("packageTotalCostMessage").innerHTML = "Total Cost: £" + discountedTotalCost;
+}
+```
+
+This final function updates the discount paragraph the tag and updates it dynamically on page reload, since its called on a `window.addEventListener("load", ...). So on submit of the form as the page reloads, or any submit for that matter, the discount tag is updated.
+
+```Javascript
+function updateDiscount() {
+    var discount = findDicount();
+    document.getElementById("packageHotelDiscountLable").innerHTML = "Discount :" + discount + "%";          
+}
+```
+
+Note that this class was not generically called discounts, since in the future, the company may decide that they want to roll out discounts for Tours and so on.
 
 # 4 Cybersecurity implementation
 
