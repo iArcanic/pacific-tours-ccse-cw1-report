@@ -1010,6 +1010,22 @@ For more details, see Appendix [5.8.3](#583-files-for-authenticated-user-only-vi
 
 ## 4.4 SQL injection immunity
 
+With any SQL based database, there is a risk it carries to be prone to SQL injection attacks. However, ASP.NET Identity Framework addresses this issue.
+
+First and foremost, ASP.NET Identity itself uses parameterised SQL statements when interacting with the database, i.e. CRUD (Create, Read, Update, Delete). These queries are distinct from user input, disallowing malicious SQL injection attacks.
+
+Secondly, since ASP.NET Identity works with Object Relational Mapping (ORM) frameworks like Entity Framework. This handles the secure translation of the C# code to the relational SQL database, again, via parameterised SQL queries.
+
+Another huge implementation, mainly via scaffolding is the clean sanitisation and validation of user input. In each page's server-side model, the data annotations for the client-side variables provide robust measures. This further mitigates SQL injections.
+
+The following is advised by Microsoft's official documentation [@microsoft2021]:
+
+- Encrypt the connection string, i.e. via GitHub secrets.
+- Any database configuration files should not be exposed to the public.
+- Do not expose the database connection to untrusted users or outside the project's scope.
+- Run the application with mimimum permissions if possible.
+- Prevent the return or queries resulting in large data sets.
+
 # 5 Appendices
 
 ## 5.1 Link to GitHub repository
