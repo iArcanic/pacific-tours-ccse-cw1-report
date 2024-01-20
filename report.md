@@ -1699,6 +1699,18 @@ namespace asp_net_core_web_app_authentication_authorisation.Areas.Identity.Pages
 }
 ```
 
+### 5.2.7 UI screenshots
+
+#### 5.2.7.1 Registration page
+
+![register-page.png](images/register-page.png)
+![register-page-validation.png](images/register-page-validation.png)
+
+#### 5.2.7.2 Login page
+
+![login-page.png](images/login-page.png)
+![login-page-validation.png](images/login-page-validation.png)
+
 ## 5.3 Files for hotel, tour, and package Bookings
 
 ### 5.3.1 W3Schools tab-based UI
@@ -2433,6 +2445,30 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 }
 ```
 
+### 5.3.3 UI screenshots
+
+#### 5.3.3.1 Bookings page tab
+
+![bookings-page-tabs.png](images/bookings-page-tabs.png)
+
+#### 5.3.3.2 Bookings page hotel tab
+
+![bookings-page-hotel-tab.png](images/bookings-page-hotel-tab.png)
+![bookings-page-hotel-tab-search.png](images/bookings-page-hotel-tab-search.png)
+![bookings-page-hotel-tab-validation.png](images/bookings-page-hotel-tab-validation.png)
+
+#### 5.3.3.3 Bookings page tour tab
+
+![bookings-page-tour-tab.png](images/bookings-page-tour-tab.png)
+![bookings-page-tour-tab-search.png](images/bookings-tab-tour-tab-search.png)
+![bookings-page-tour-tab-validation.png](images/bookings-page-tour-tab-validation.png)
+
+#### 5.3.3.4 Bookings page package tab
+
+![bookings-page-package-tab.png](images/bookings-page-package-tab.png)
+![bookings-page-package-tab-search.png](images/bookings-page-package-tab-search.png)
+![bookings-page-package-tab-validation.png](images/bookings-page-package-tab-validation.png)
+
 ## 5.4 Files for View Bookings
 
 ### 5.4.1 [`ViewBookings.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/ViewBookings.cshtml)
@@ -2749,6 +2785,10 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
     }
 }
 ```
+
+### 5.4.3 UI screenshots
+
+![view-bookings-page.png](images/view-bookings-page.png)
 
 ## 5.5 Files for hotel, tour, and package Edit Bookings
 
@@ -3299,6 +3339,25 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 }
 ```
 
+### 5.5.7 UI screenshots
+
+#### 5.5.7.1 Edit hotel bookings
+
+![edit-hotel-bookings-page.png](images/edit-hotel-bookings-page.png)
+
+#### 5.5.7.2 Edit tour bookings
+
+![edit-tour-bookings-page.png](images/edit-tour-bookings-page.png)
+
+#### 5.5.7.3 Edit package bookings
+
+![edit-package-bookings-page.png](images/edit-package-bookings-page.png)
+
+#### 5.5.7.4 Booking cancellations
+
+![view-bookings-page-cancellation.png](images/view-bookings-page-cancellation.png)
+![view-bookings-page-cancellation-proof.png](images/view-bookings-page-cancellation-proof.png)
+
 ## 5.6 Files for bookings report dashboard
 
 ### 5.6.1 [`Report.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Report.cshtml)
@@ -3505,6 +3564,11 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 }
 ```
 
+### 5.6.3 UI screenshots
+
+![manager-bookings-report-page-1.png](images/manager-bookings-report-page-1.png)
+![manager-bookings-report-page-2.png](images/manager-bookings-report-page-2.png)
+
 ## 5.7 Files for payment
 
 ### 5.7.1 [`Payment.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Payment.cshtml)
@@ -3665,6 +3729,11 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
     }
 }
 ```
+
+### 5.7.3 UI screenshots
+
+![payment-page.png](images/payment-page.png)
+![payment-page-validation.png](images/payment-page-validation.png)
 
 ## 5.8 Security implementations and considerations
 
@@ -4360,6 +4429,10 @@ var QRCode;
 })();
 ```
 
+#### 5.8.1.2 UI screenshots
+
+![2fa-qr-code-page.png](images/2fa-qr-code-page.png)
+
 ### 5.8.2 Files for ASP.NET Identity Framework hashing algorithm
 
 #### 5.8.2.1 [`Crypto.cs`](https://github.com/aspnet/AspNetIdentity/blob/main/src/Microsoft.AspNet.Identity.Core/Crypto.cs)
@@ -4488,5 +4561,9 @@ namespace Microsoft.AspNet.Identity
     <p class="text-danger">You do not have access to this resource.</p>
 </header>
 ```
+
+#### 5.8.3.2 UI screenshots
+
+![access-denied-page.png](images/access-denied-page.png)
 
 # 6 References
