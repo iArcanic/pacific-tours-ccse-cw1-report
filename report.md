@@ -696,7 +696,7 @@ public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 
 For more detail, see Appendix ([5.5](#55-files-for-edit-bookings)) for the content of all files relating to edit bookings.
 
-### 3.5 Key requirement 5: Manager role and report display
+### 3.5 Key requirement 5: Manager role and Bookings Report Display
 
 For this requirement, user roles needed to be considered, and this can easily be implemented via ASP.NET Identity Framework. Within these lines, a `client`, for normal application users, and `manager`, for managerial use, have been established via ASP.NET Identity Roles in the `ApplicationDbContext` class.
 
@@ -800,6 +800,104 @@ public async Task<IActionResult> OnGet()
 ```
 
 For more detail see Appendix ([5.6](#56-files-for-bookings-report-dashboard)) for the content of all files relating to the bookings report dashboard.
+
+### 3.6 Key requirement 6: Payments
+
+This requirement implements a dummy payment page, as the company is likely to integrate an external payments provider, with their own authentication, APIs and logic. The page uses a simple form with ASP.NET validation defined in the data annotations in the according server-side class via the client-side's `asp-validation-summary` and `asp-validation-for` tag attributes.
+
+```html
+<h2>Payment</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="paymentForm" method="post">
+    <p class="text-danger">@Model.PaymentForm.ErrorMessage</p>
+    <hr />
+    <div class="form-group">
+        <label asp-for="PaymentForm.CardName">Name on card:</label>
+        <input asp-for="PaymentForm.CardName" type="text" class="form-control" value="John Appleseed" />
+        <span asp-validation-for="PaymentForm.CardName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.CardNumber">Card number:</label>
+        <input asp-for="PaymentForm.CardNumber" type="text" class="form-control" value="1234567890123456" />
+        <span asp-validation-for="PaymentForm.CardNumber" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.BillingAddress">Billing address:</label>
+        <input asp-for="PaymentForm.BillingAddress" type="text" class="form-control" value="123 New Street" />
+        <span asp-validation-for="PaymentForm.BillingAddress" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.CardExpiryDate">Expires:</label>
+        <input asp-for="PaymentForm.CardExpiryDate" type="date" class="form-control" value="2025-01-15" />
+        <span asp-validation-for="PaymentForm.CardExpiryDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.CvcNumber">CVC:</label>
+        <input asp-for="PaymentForm.CvcNumber" type="password" class="form-control" value="123" />
+        <span asp-validation-for="PaymentForm.CvcNumber" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" class="btn btn-primary" value="Pay" />
+    </div>
+</form>
+```
+
+The following `OnPostAsync` method retrieves the booking ID and entity type from the "Bookings" and "ViewBookings" pages. Using this, the `if` statements help determine what booking type it is (i.e. Hotel, Tour, or Package). If so, the `IsPaid` property of the booking model is set to true and it redirects to the "ViewBookings" page along with a success message passed in the URL as a query parameter, so it can be rendered upon the direction – serves as user feedback.
+
+```C#
+public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+{
+    var BookingId = new Guid(Request.Query["bookingId"]);
+    var BookingType = Request.Query["bookingType"];
+
+    if (BookingType == "hotel")
+    {
+        HotelBooking hotelBooking = await _dbContext.HotelBookings.FindAsync(BookingId);
+
+        hotelBooking.IsPaid = true;
+        await _dbContext.SaveChangesAsync();
+
+        return RedirectToPage("/ViewBookings", new
+        { 
+            successMessage = "Success!"
+        });
+    }
+    else if (BookingType == "tour")
+    {
+        TourBooking tourBooking = await _dbContext.TourBookings.FindAsync(BookingId);
+
+        tourBooking.IsPaid = true;
+        await _dbContext.SaveChangesAsync();
+
+        return RedirectToPage("/ViewBookings", new
+        {
+            successMessage = "Success!"
+        });
+    }
+    else if (BookingType == "package")
+    {
+        PackageBooking packageBooking = await _dbContext.PackageBookings.FindAsync(BookingId);
+
+        packageBooking.IsPaid = true;
+        await _dbContext.SaveChangesAsync();
+
+        return RedirectToPage("/ViewBookings", new
+        {
+            successMessage = "Success!"
+        });
+    }
+    else
+    {
+        PaymentForm.ErrorMessage = null;
+
+        PaymentForm.ErrorMessage = "A payment error has occured. Please try again later.";
+
+        return Page();
+    }
+}
+```
+
+For more detail see Appendix ([5.7](#57-files-for-payment)) for the content of all files relating to payment.
 
 # 4 Cybersecurity implementation
 
@@ -3043,7 +3141,7 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
 
 ### 5.6.1 [`Report.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Report.cshtml)
 
-```C#
+```html
 @page
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "manager")]
@@ -3240,6 +3338,167 @@ namespace asp_net_core_web_app_authentication_authorisation.Pages
             ReportTable.PackageBookingsList = packageBookingsList;
 
             return Page();
+        }
+    }
+}
+```
+
+## 5.7 Files for payment
+
+### 5.7.1 [`Payment.cshtml`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Payment.cshtml)
+
+```html
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "client")]
+@model PaymentModel
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<h2>Payment</h2>
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<form id="paymentForm" method="post">
+    <p class="text-danger">@Model.PaymentForm.ErrorMessage</p>
+    <hr />
+    <div class="form-group">
+        <label asp-for="PaymentForm.CardName">Name on card:</label>
+        <input asp-for="PaymentForm.CardName" type="text" class="form-control" value="John Appleseed" />
+        <span asp-validation-for="PaymentForm.CardName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.CardNumber">Card number:</label>
+        <input asp-for="PaymentForm.CardNumber" type="text" class="form-control" value="1234567890123456" />
+        <span asp-validation-for="PaymentForm.CardNumber" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.BillingAddress">Billing address:</label>
+        <input asp-for="PaymentForm.BillingAddress" type="text" class="form-control" value="123 New Street" />
+        <span asp-validation-for="PaymentForm.BillingAddress" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.CardExpiryDate">Expires:</label>
+        <input asp-for="PaymentForm.CardExpiryDate" type="date" class="form-control" value="2025-01-15" />
+        <span asp-validation-for="PaymentForm.CardExpiryDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PaymentForm.CvcNumber">CVC:</label>
+        <input asp-for="PaymentForm.CvcNumber" type="password" class="form-control" value="123" />
+        <span asp-validation-for="PaymentForm.CvcNumber" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" class="btn btn-primary" value="Pay" />
+    </div>
+</form>
+```
+
+### 5.7.2 [`Payments.cshtml.cs`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/Pages/Payment.cshtml.cs)
+
+```C#
+using asp_net_core_web_app_authentication_authorisation.Models;
+using asp_net_core_web_app_authentication_authorisation.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.ComponentModel.DataAnnotations;
+
+namespace asp_net_core_web_app_authentication_authorisation.Pages
+{
+    public class PaymentModel : PageModel
+    {
+        [BindProperty]
+        public PaymentFormModel PaymentForm { get; set; }
+
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public PaymentModel(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        {
+            PaymentForm = new PaymentFormModel();
+            _dbContext = dbContext;
+            _userManager = userManager;
+        }
+
+        public class PaymentFormModel
+        {
+            [Required(ErrorMessage = "Please enter name on card")]
+            [DataType(DataType.Text)]
+            [Display(Name = "Card name")]
+            public string CardName { get; set; }
+
+            [Required(ErrorMessage = "Please enter card number")]
+            [DataType(DataType.Text)]
+            [Display(Name = "Card name")]
+            [RegularExpression(@"^\d{16}$", ErrorMessage = "Invalid credit card number. Must be 16 digits.")]
+            public string CardNumber { get; set; }
+
+            [Required(ErrorMessage = "Please enter billing address")]
+            [DataType(DataType.Text)]
+            [Display(Name = "Billing address")]
+            public string BillingAddress { get; set; }
+
+            [Required(ErrorMessage = "Please input card expiry date")]
+            [DataType(DataType.Date)]
+            [Display(Name = "Expiry date")]
+            public DateOnly CardExpiryDate { get; set; }
+
+            [Required(ErrorMessage = "Please enter CVC number")]
+            [Display(Name = "CVC number")]
+            [RegularExpression(@"^\d{3,4}$", ErrorMessage = "Invalid CVC number")]
+            public string CvcNumber { get; set; }
+
+            public string ErrorMessage { get; set; }
+        }
+
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            var BookingId = new Guid(Request.Query["bookingId"]);
+            var BookingType = Request.Query["bookingType"];
+
+            if (BookingType == "hotel")
+            {
+                HotelBooking hotelBooking = await _dbContext.HotelBookings.FindAsync(BookingId);
+
+                hotelBooking.IsPaid = true;
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/ViewBookings", new
+                { 
+                    successMessage = "Success!"
+                });
+            }
+            else if (BookingType == "tour")
+            {
+                TourBooking tourBooking = await _dbContext.TourBookings.FindAsync(BookingId);
+
+                tourBooking.IsPaid = true;
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/ViewBookings", new
+                {
+                    successMessage = "Success!"
+                });
+            }
+            else if (BookingType == "package")
+            {
+                PackageBooking packageBooking = await _dbContext.PackageBookings.FindAsync(BookingId);
+
+                packageBooking.IsPaid = true;
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToPage("/ViewBookings", new
+                {
+                    successMessage = "Success!"
+                });
+            }
+            else
+            {
+                PaymentForm.ErrorMessage = null;
+
+                PaymentForm.ErrorMessage = "A payment error has occured. Please try again later.";
+
+                return Page();
+            }
         }
     }
 }
