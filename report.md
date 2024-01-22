@@ -11,31 +11,29 @@ csl: harvard-imperial-college-london.csl
 
 # 1 Introduction
 
-This report documents the design, development, and implementation of a web-based reservation system for the company, Pacific Tours. The project aims to create an online system that enables customers to search, select, and reserve various hotel accommodations and tour packages that are offered by the company.
+This report documents the design, development, and implementation of a web-based reservation system for the company, Pacific Tours. The project aims to create a website that enables customers to search and book various hotel accommodations and tourd that are offered by the company.
 
 The main requirements for this system are as follows:
 
 - Customer registration and login
-- Searching and booking hotels
-- Searching and booking tours
-- Searching and booking packages (consisting of hotel + tour)
+- Booking hotels, tours, and packages (a combination of both a hotel and a tour)
 - Offering discounts based on booked packages
 - Managing booking cancellations and modifications
 - Generating booking summaries and availability reports for managers
 
 # 2 System design and development approach
 
-To meet the outlined requirements, a software development methodology, specifically agile, was incorporated to iteratively gather requirements, and design considerations to implement and demonstrate credible working progression within set cycles.
+To meet the outlined requirements, an agile approach was taken.
 
 ## 2.1 Agile software development methodology
 
-The iterative approach to developing software has been highly beneficial to programmers to improve their skills and organisations in estimating the necessary timespan required for certain tasks [@edeki2015]. Its traits of flexibility, a clear-defined scope of requirements, quick adaptability as well and pragmatism to deliverables make it suitable for software companies to survive within evolving landscapes [@brush2022] – whilst maintaining the company's business interests.
+The iterative approach to developing software has been highly beneficial to programmers to improve their skills and organisations in estimating the necessary timespan required for certain tasks [@edeki2015]. Its traits of flexibility, a clear-defined scope of requirements, quick adaptability as well and pragmatism to deliverables make it suitable for developing software [@brush2022].
 
-Agile programming utilises the idea of sprints, which are iterative repetitions whereby a functionality is taken and developed to produce small new increments. Each sprint follows the typical developmental phases, as seen in more traditional software methodologies such as the waterfall method. These phases include requirements, analysis, design, evolution, and delivery @abrahamsson2017].
+Agile programming utilises the idea of sprints, which are iterative cycles whereby a functionality is taken and developed to produce small increments. Each sprint follows the typical developmental phases, as seen in more traditional software methodologies such as the waterfall method. These phases include requirements, analysis, design, evolution, and delivery [@abrahamsson2017].
 
 ## 2.2 Agile application and design considerations
 
-For this specific scenario, however, an agile methodology was adopted with sprints each lasting 2-weeks. This timeframe proved to be adequate for implementing (which arguably took most of the time), demonstrating, and conducting robust testing. Rather than delivering all the requirements at once, it was beneficial to abstract and break the overall scenario down into key components and decompose further if required.
+For this specific scenario, however, an agile methodology was adopted with sprints each lasting 2-weeks. This timeframe proved to be adequate for implementing, demonstrating, and conducting robust testing. Rather than delivering all the requirements at once, it was beneficial to abstract and break the overall scenario down into key components.
 
 Throughout, the goal was to promote code that is maintainable, extendable, and also secure. This can be achieved through best coding practices such as:
 
@@ -43,21 +41,21 @@ Throughout, the goal was to promote code that is maintainable, extendable, and a
 - Implementing input validation for all forms.
 - Ensuring database parameters are properly formatted, i.e. sanitised.
 
-The sprints were broken down into the following as so, assuming that the project took nearly 2-months. Furthermore, a Kanban-style Jira board provided more of a visual representation in the form of tickets to complete, as opposed to the tabular format presented below.
+The sprints were broken down into the following:
 
 ### 2.2.1 Sprint 1
 
 | Tasks                                                                        | Interpretation                                                                                                            |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
 | Choosing suitable web technologies                                           | ASP.NET C# with both client and server side combined                                                                      |
-| Setting up robust development environment                                    | Adequate system resources for high performance, Windows 10 OS, Microsoft SQL Management Studio, stable network connection |
+| Setting up development environment                                           | Adequate system resources for high performance, Windows 10 OS, Microsoft SQL Management Studio, stable network connection |
 | Familiarising with technologies by developing small Proof of Concepts (POCs) | Experiment with Blazor WebAssembly, ASP.NET default scaffolded classes etc.                                               |
 | Deciding the project structure and architecture                              | Single ASP.NET Core Web application with folders for Pages, Services, Exceptions, Models                                  |
 
 ### 2.2.2 Sprint 2
 
 | Tasks                              | Interpretation                                                                                  |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+|------------------------------------|-------------------------------------------------------------------------------------------------|
 | Setup version control system       | Using a private GitHub repository                                                               |
 | Configure SQL database settings    | Using Microsoft SQL Management Studio, database context class, Entity Framework Core Migrations |
 | Integrate user model               | Using Entity Framework Core Identity, ApplicationUser model                                     |
@@ -65,19 +63,19 @@ The sprints were broken down into the following as so, assuming that the project
 
 ### 2.2.3 Sprint 3
 
-| Tasks                                                                 | Interpretation                                                                                               |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Decide on database entities                                           | Such Hotels, Tours, Availabilities, etc.                                                                     |
-| Discern entity relations between tables                               | Mostly one-to-many/many-to-one with a few one-to-one relations                                               |
-| Test SQL database and interact with it via code                       | Use Entity Framework Core Migrations to update database and use data context class to facilitate interaction |
-| Initially draft the UI for any required pages and their functionality | Such as Bookings, Edit Bookings, View Bookings and so on                                                     |
+| Tasks                                           | Interpretation                                                                                               |
+|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| Decide on database entities                     | Such Hotels, Tours, Availabilities, etc.                                                                     |
+| Discern entity relations between tables         | Mostly one-to-many/many-to-one with a few one-to-one                                                         |
+| Test SQL database and interact with it via code | Use Entity Framework Core Migrations to update database and use data context class to facilitate interaction |
+| Draft the UI for any required pages and their functionality | Such as Bookings, Edit Bookings, View Bookings and so on                                                     |
 
 ### 2.2.4 Sprint 4
 
 | Tasks                                      | Interpretation                                                                                                |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Implement Bookings page UI                 | Tab based UI for Hotels, Tours and Packages and relevant form fields                                          |
-| Implement Bookings functionality           | Configure database query and write to database                                                                |
+|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| Implement Bookings page UI                 | Tab based UI for Hotels, Tours and Packages with relevant form details                                        |
+| Implement Bookings functionality           | Configure database queries and write to database                                                              |
 | Implement View Bookings page UI            | Table based UI for Hotels, Tours and Packages with relevant details plus Edit and Cancel buttons              |
 | Implement View Bookings functionality      | Hotels, Tours or Packages booked should be rendered to the page dynamically based on database state           |
 | Implement Edit Bookings page UI            | Derive from Bookings page form UI for each Hotels, Tours and Packages                                         |
@@ -87,7 +85,7 @@ The sprints were broken down into the following as so, assuming that the project
 
 ## 3.1 Key requirement 1: Customer account management
 
-This requirement encompasses user login, registration, logout, and their relevant UI counterparts. Mainly through ASP.NET Identity dependency and scaffolding, it provided a customisable foundation for which scenario-specific features can be implemented with ease.
+This requirement encompasses user login, registration, logout, and their relevant UI counterparts, mainly through ASP.NET Identity dependencies and scaffolding.
 
 First, looking at the `ApplicationUser` model:
 
@@ -109,7 +107,7 @@ namespace PacificTours.Models
 
 This extends ASP.NET's in-built `IdentityUser`, meaning that additional properties vital to a user model, such as `PasswordHash`, `UserName`, `Email`, and `PhoneNumber` are already a part of that class by default and do not need to be redefined.
 
-Next, using ASP.NET's scaffolding, automatic files for Login (`Login.cshtml` and `Login.cshtml.cs`), files for Registration (`Registration.cshtml` and `Registration.cshtml.cs`) as well as Logout (`Logout.cshtml` and `Logout.cshtml.cs`) are generated with their relevant logic in their `OnPostAsync` methods. Then based on the `.cshtml` form submit, the `OnPostAsync` function, checks the user using `SignInManager` class (for Login and Logout) and `UserManager` class (for Registration). For example, looking at the `Login.cshtml.cs`'s `OnPostAsync` method, first checks if the `ModelState` is valid. If so, it attempts to get the user using `PasswordSignInAsync` to find the user from the database and uses the await keyword since the function is of type `async`. Based on that, it informs the UI with the relevant messages as well as redirection to the appropriate pages.
+Next, using ASP.NET's scaffolding, automatic files for login (`Login.cshtml` and `Login.cshtml.cs`), files for registration (`Registration.cshtml` and `Registration.cshtml.cs`) as well as for logout (`Logout.cshtml` and `Logout.cshtml.cs`) are generated with their relevant logic in their `OnPostAsync` methods. Then based on the `.cshtml` form submit, the `OnPostAsync` function, checks the user using `SignInManager` class (for Login and Logout) and `UserManager` class (for Registration). For example, looking at the `Login.cshtml.cs`'s `OnPostAsync` method, first checks if the `ModelState` is valid. If so, it attempts to get the user using `PasswordSignInAsync` to find the user from the database and uses the `await` keyword since the function is of type `async`.
 
 ```C#
 public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -143,7 +141,7 @@ public async Task<IActionResult> OnPostAsync(string returnUrl = null)
             }
 ```
 
-In general, since the logic for these is repetitive and implemented by default via scaffolding, they do not need to be explored in depth. An abstract explanation of these classes first defines the bind properties that link to the elements in the relevant `.cshtml` page. For example, in the `Login.cshtml.cs` file, the `InputModel` class defines these properties and can bind to the `Login.cshtml` page via the `[BindProperty]` data annotation. Furthermore, the annotations for the properties in the `InputModel` class serve as input validation.
+An abstract explanation of these classes first defines the bind properties that link to the elements in the relevant `.cshtml` page via the `[BindProperty]` data annotation. Furthermore, the annotations for the properties in the `InputModel` class serve as input validation.
 
 ```C#
 [BindProperty]
@@ -168,13 +166,11 @@ For more detail see Appendix [5.2](#52-scaffolding-generated-files-for-user-acco
 
 ## 3.2 Key requirement 2: Bookings
 
-The requirement for this part of the scenario involves a single bookings page in which the user can either book a hotel, tour, or package (a combination of both a hotel and a tour). For this page, inspiration was taken from Bookings.com UI – which features a tab-based selection, where there is a distinct tab for each entity. Therefore, such a format was taken, and the starting code for this was taken from W3Schools [@w3schools2024] (See Appendix [5.3.1](#531-w3schools-tab-based-ui)).
+The requirement for this part of the scenario involves a single bookings page in which the user can either book a hotel, tour, or package (a combination of both a hotel and a tour). For this page, inspiration was taken from the Bookings.com UI – which features a tab-based system. The starting code for this was taken from W3Schools [@w3schools2024] (See Appendix [5.3.1](#531-w3schools-tab-based-ui)).
 
-This UI however, has to be adapted for the Bookings system, since the default tab logic doesn't take into account the refresh on form submit, persistence of input box states, additional client-side validation and so on. This whole host of issues involved additional JavaScript client-side validation that cannot be addressed by the server-side C# code alone.
+This UI however, has to be adapted for the Bookings system, since the default tab logic doesn't take into account the refresh on form submit, persistence of input box states, and so on. This whole host of issues involves additional JavaScript client-side validation that cannot be addressed by the server-side C# code alone.
 
-Since the UI and backend logic is virtually similar to each other, looking at the implementation of hotel bookings should suffice.
-
-Starting with the UI, here, towards the top, the `asp-page-handler` attribute of the form element corresponds to `HotelSearch`, i.e. the correct `OnPostAsync` method in the server-side code. This also means that the URL will have a new query parameter, `handler=HotelSearch`, making it easy to distinguish between what tab is selected. Furthermore, there is the necessary validation from the service which is referenced here through the `asp-validation` element tags.
+Starting with the UI, the `asp-page-handler` attribute of the form element corresponds to `HotelSearch`, i.e. the correct `OnPostAsync` method in the server-side code. This also means that the URL will have a new query parameter, `handler=HotelSearch`, making it easy to distinguish what tab is being selected.
 
 ```html
 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
@@ -221,7 +217,7 @@ Starting with the UI, here, towards the top, the `asp-page-handler` attribute of
 
 Here below, are the relevant JavaScript functions that are referenced in the code.
 
-As mentioned previously, since the `OnPostAsync` function reloads the page, using the page handler, this `switch` statement checks what form is being submitted and automatically selects the relevant tab as default with the `onClick()` method.
+Since the `OnPostAsync` function reloads the page, using the page handler, this `switch` statement checks what form is being submitted and automatically selects the relevant tab as default with the `onClick()` method.
 
 ```Javascript
 let params = new URL(document.location).searchParams;
@@ -266,7 +262,7 @@ function submitHotelSearchForm() {
 
 The following series of functions are related to cost calculations for all three tabs.
 
-The first function, `calculateTotal(dropdown, fromDate, toDate)`, extracts the cost value from the dropdown box and calculates the cost of the hotel or tour per night/day by taking the duration of days in between the inputted dates.
+The first function, `calculateTotal(dropdown, fromDate, toDate)`, extracts the cost value from the dropdown box and calculates the cost per night/day.
 
 ```Javascript
 function calculateTotal(dropdown, fromDate, toDate) {
@@ -288,7 +284,7 @@ function calculateTotalCost(dropdown, fromDate, toDate, totalCostMessageId) {
 }
 ```
 
-This next function, is specifically for calculating the total cost of a package since it contains both a tour and hotel. Since logic doesn't need to be repeated, it utilises the previous function to calculate the overall cost.
+This next function, is specifically for calculating the total cost of a package since it contains both a tour and hotel. Since logic doesn't need to be repeated, it utilises the previous function to calculate cost.
 
 ```Javascript
 function calculateTotalPackageCost() {
@@ -338,18 +334,7 @@ window.addEventListener("load", function () {
 });
 ```
 
-Moving onto the server-side function, again, the bind model for the client-side properties are the same. Taking the `OnPostHotelSearchAsync` function as the logic for all three is consistent, it again first checks if the `ModelState`, which is the logic and client-side elements, are valid.
-
-```C#
-public async Task<IActionResult> OnPostHotelSearchAsync(string command, string returnUrl = null)
-{
-    if (!ModelState.IsValid)
-    {
-        return Page();
-    }
-```
-
-Then, it checks if the button clicked is search, via the `command` parameter. This references the `name=command` element for the search button on the client-side. Using the database context, it checks for all available hotels based on the user's dates and returns the found `Hotel` object. It then binds this into the `HotelList` to the client-side element.
+Taking the `OnPostHotelSearchAsync` function, it checks if the button clicked is search, via the `command` parameter. This references the `name=command` element for the search button on the client-side. Using the database context, it checks for all available hotels based on the user's dates and returns the found `Hotel` object. It then binds this into the `HotelList` to the client-side element.
 
 ```C#
 if (command == "Search")
@@ -368,7 +353,7 @@ HotelSearch.HotelsList = availableHotels;
 return Page();
 ```
 
-However, in the else block, i.e. the "Book" button is clicked, a new hotel booking is made, referencing the `HotelBooking` model. This model takes in a unique ID, i.e. the HotelBookingId as a GUID data type, a reference to the `Hotel` that the user selected, the dates, and a reference to the current user found via the `IdentityUser`'s `UserManager` class. It is then added to the `HotelBookings` table in the database. Finally, a redirection is made to the "/Payment" page with the booking ID and type of booking (hotel, tour, or package) as a query parameter in the URL. This is then extracted from the payments page for further use.
+However, in the else block, i.e. the "Book" button is clicked, a new hotel booking is made, referencing the `HotelBooking` model. This model takes in a unique ID, i.e. the HotelBookingId as a GUID data type, a reference to the `Hotel` that the user selected, the dates, and a reference to the current user (found via the `IdentityUser`'s `UserManager` class). It is then added to the `HotelBookings` table in the database. Finally, a redirection is made to the "/Payment" page with the booking ID and type of booking (hotel, tour, or package) as a query parameter in the URL. This is then extracted from the payments page for further use.
 
 ```C#
 else
@@ -403,11 +388,11 @@ For more detail, see Appendix [5.3](#53-files-for-hotel-tour-and-package-booking
 
 ## 3.3 Key requirement 3: View Bookings
 
-For this requirement, any hotels, tours, or packages booked by the user should be displayed promptly after a successful payment. This page should hold the latest details of bookings, so even if they are edited (see [3.4](#34-key-requirement-4-edit-bookings)) the most up-to-date details should be displayed.
+For this requirement, any hotels, tours, or packages booked by the user should be displayed promptly after a successful payment. This page should hold the latest details of bookings, even if they are edited (see [3.4](#34-key-requirement-4-edit-bookings)).
 
 Starting with the client-side code, again, just looking at the hotels should suffice since tours and packages follow the same logic.
 
-Here, inspired by the Bookings page, the `asp-page-handler` element ensures that on form submit, the URL handler parameter is `HotelTable`, helping it to be differentiated from the other forms on the page. The UI is tabular-based, so it takes on the headings similar to the properties of the `Hotel` model class. Using in line C#, the rows can be dynamically updated via a `foreach` loop that iterated through a list of type `HotelBookings` that is populated dynamically in the server-side. The row for the hotel cost does a calculation, multiplying it by the duration of days. The days being the difference between the `HotelBooking.CheckInDate` and the `HotelBooking.CheckOutDate`.
+Using in line C# in the `.cshtml` page, the rows can be dynamically updated via a `foreach` loop that iterated through a list of type `HotelBookings` that is populated dynamically in the server-side. The row for the hotel cost does a calculation, multiplying it by the duration of days. The duration being the difference between the `HotelBooking.CheckInDate` and the `HotelBooking.CheckOutDate`.
 
 ```html
 <form id="hotelTableForm" method="post" asp-page-handler="HotelTable">
@@ -472,7 +457,7 @@ Here, inspired by the Bookings page, the `asp-page-handler` element ensures that
 </form>
 ```
 
-For each table entry, there are two additional buttons. One for editing and the other for the cancellation of bookings. These buttons are bound to the below JavaScript functions. Upon the cancellation button, a dialog box appears asking the user for confirmation. It then dynamically submits the form based on that, via the `submitForm` function.
+For each table entry, there are two additional buttons. One for editing and the other for the cancellation of bookings. These buttons are bound to the below JavaScript functions. Upon the cancellation button, a dialog box appears asking the user for confirmation. It then submits the form via the `submitForm` function.
 
 ```Javascript
 function onCancelClick(bookingInputId, submitFormId, bookingId) {
@@ -492,7 +477,7 @@ function submitForm(bookingInputId, submitFormId, bookingId) {
 }
 ```
 
-For the server-side component for this page, has an `OnGet` function, that executes code on page reload. First, the ID of the current user is required, and using this, a query to the database is made to retrieve all relevant bookings, of all types i.e. hotels, tours and packages. The variable which are bound to the client side take on the value of these variables so that it can be displayed on the page. Finally, the `successMessage` element takes on the query parameter in the URL from the payments page to provide user feedback.
+First, the ID of the current user is required, and using this, a query to the database is made to retrieve all relevant bookings. The variable which are bound to the client side take on the value of these variables so that it can be displayed. Finally, the `successMessage` element takes on the query parameter in the URL from the payments page providing user feedback.
 
 ```C#
 public async Task<IActionResult> OnGet()
@@ -529,7 +514,7 @@ public async Task<IActionResult> OnGet()
 
 Each table in the ViewBookings page has its own `PostAsync` function with the same logic as demonstrated below. It first attempts to take the `HotelBookingId` from the client-side form to make a request to the database to retrieve the correct `HotelBooking`. The `IsCancelled` property is set to the boolean value of `true` and the page redirects to "/ViewBookings". However if the "Edit" button is clicked, it redirects to the appropriate EditBooking page (see [3.4](#34-key-requirement-4-edit-bookings)) and passes the appropriate `HotelBookingId` as a URL query parameter.
 
-It is important to note that the bookings have an `IsCancelled` property. This means that soft deletion is implemented, rather than physical record deletion, in order to avoid database problems. A downside of this however, is that the database size can increase exponentially over time, but it is the trade off taken in comparison to maintaining a secure database.
+It is important to note that the bookings have an `IsCancelled` property. This means that soft deletion is implemented, rather than physical record deletion, in order to avoid database problems. A downside of this however, is that the database size can increase exponentially over time, but it is the trade off taken to maintain a secure database.
 
 ```C#
 public async Task<IActionResult> OnPostHotelTableAsync(string command, string returnUrl = null)
@@ -562,9 +547,9 @@ For more detail, see Appendix [5.4](#54-files-for-view-bookings) for the content
 
 ## 3.4 Key requirement 4: Edit Bookings
 
-This requirement entails implementing a modification form for any existing bookings displayed on the "ViewBookings" page. Upon the "Edit" button click, they should be redirected to the appropriate edit form, and upon modification, the "ViewBookings" page should update with the new information.
+This requirement entails implementing a modification form for any existing bookings. Upon the "Edit" button click, they should be redirected to the appropriate edit form, and upon modification, the "ViewBookings" page with the new information.
 
-This form essentially derives from the Bookings page form, but without the tab styling – since for each page, only one entity is required. The form below is simple and self-explanatory, with just the required input values. One thing however is that the modification of the user's room type and choice of hotel has been disabled. This assumption has been taken under the consideration of the business limits, in which they can only accommodate the modification of the check-in and check-out dates.
+The form below is simple and self-explanatory, with just the required input values. One thing however is that the modification of the user's room type and choice of hotel has been disabled. This assumption has been taken under the consideration of the business limits, in which they can only accommodate the modification of the check-in and check-out dates.
 
 ```html
 <h2>Edit Hotel Booking</h2>
@@ -618,7 +603,7 @@ This form essentially derives from the Bookings page form, but without the tab s
 </form>
 ```
 
-Here, when the page loads, this `OnGet` method attempts to take the `hotelBookingId` from the URL query parameter. After converting that to a GUID, it then attempts to find the relevant `Hotel` object based on that ID via getting the relevant `HotelBooking` record. From that, it pre-populates the form with the existing ```HotelBooking```.
+Here, when the page loads, the `OnGet` method attempts to take the `hotelBookingId` from the URL query parameter. After converting that to a GUID, it then attempts to find the relevant `Hotel` object based on that ID via getting the relevant `HotelBooking` record. From that, it pre-populates the form with the existing `HotelBooking`.
 
 ```C#
 public async Task<IActionResult> OnGet()
@@ -642,7 +627,7 @@ public async Task<IActionResult> OnGet()
 }
 ```
 
-When the form is submitted, the `OnPostAsync` function, similar to the `OnGet` function, aims to get the `HotelBookingId` via the URL query parameter, and converts that to a GUID. Using that, it retrieves the relevant `HotelBooking` record's `Hotel` object. Using that, it attempts to find that specific hotel's availability and returns that `Hotel` object. In the case when the `HotelAvailability` list is populated with at least one item (a record), i.e. a hotel with that availability exists, it then updates the `CheckInDate` and `CheckOutDates` of that record. Upon modification, a page redirection is made to "Payments", where the booking ID along with the entity type is passed via the URL query parameter. If in the case however that the `HotelAvailability` variable is zero, then an appropriate error message is displayed – to the one which is bound to the client-side element – and the input fields are once again populated with the initial booking parameters.
+When the form is submitted, the `OnPostAsync` function, aims to get the `HotelBookingId` via the URL query parameter, and converts that to a GUID. Using that, it retrieves the relevant `HotelBooking` record's `Hotel` object. It then attempts to find that specific hotel's availability and returns that `Hotel` object. In the case when the `HotelAvailability` list is populated with at least one item, i.e. a hotel with that availability, it then updates the `CheckInDate` and `CheckOutDate` of that record. Upon modification, a page redirection is made to "/Payments", where the booking ID along with the entity type is passed via the URL query parameter. If the `HotelAvailability` variable is zero, then an error message is displayed.
 
 ```C#
 public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -698,7 +683,7 @@ public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 
 For more detail, see Appendix ([5.5](#55-files-for-edit-bookings)) for the content of all files relating to edit bookings.
 
-### 3.5 Key requirement 5: Manager role and Bookings Report Display
+## 3.5 Key requirement 5: Manager role and Bookings Report Display
 
 For this requirement, user roles needed to be considered, and this can easily be implemented via ASP.NET Identity Framework. Within these lines, a `client`, for normal application users, and `manager`, for managerial use, have been established via ASP.NET Identity Roles in the `ApplicationDbContext` class.
 
@@ -770,7 +755,7 @@ The manager's report dashboard is heavily inspired by the "ViewBookings" page to
 </div>
 ```
 
-However, the "ViewBookings" page's server-side code has to be modified. In addition to including the entity of either `Hotel`, `Tour` or `Package`, since information about that user is required, the `ApplicationUser` has been included in the LINQ query as well. Once these are pulled, they are set to the appropriate bind page variable to be displayed on the client-side.
+However, the "ViewBookings" page's server-side code has to be modified. In addition to including the entity of either `Hotel`, `Tour` or `Package`, since information about that user is required, the `ApplicationUser` has been included in the LINQ query as well. Once these are pulled, they are set to the appropriate bind variables to be displayed on the client-side.
 
 ```C#
 public async Task<IActionResult> OnGet()
@@ -803,9 +788,9 @@ public async Task<IActionResult> OnGet()
 
 For more detail see Appendix ([5.6](#56-files-for-bookings-report-dashboard)) for the content of all files relating to the bookings report dashboard.
 
-### 3.6 Key requirement 6: Payments
+## 3.6 Key requirement 6: Payments
 
-This requirement implements a dummy payment page, as the company is likely to integrate an external payments provider, with their own authentication, APIs and logic. The page uses a simple form with ASP.NET validation defined in the data annotations in the according server-side class via the client-side's `asp-validation-summary` and `asp-validation-for` tag attributes.
+This requirement implements a dummy payment page, as the company is likely to integrate an external payments provider, with their own authentication, APIs, and logic. The page uses a simple form with the standard ASP.NET validation.
 
 ```html
 <h2>Payment</h2>
@@ -844,7 +829,7 @@ This requirement implements a dummy payment page, as the company is likely to in
 </form>
 ```
 
-The following `OnPostAsync` method retrieves the booking ID and entity type from the "Bookings" and "ViewBookings" pages. Using this, the `if` statements help determine what booking type it is (i.e. Hotel, Tour, or Package). If so, the `IsPaid` property of the booking model is set to true and it redirects to the "ViewBookings" page along with a success message passed in the URL as a query parameter, so it can be rendered upon the direction – serves as user feedback.
+The following `OnPostAsync` method retrieves the booking ID and entity type from the "Bookings" and "ViewBookings" pages. Using this, the `if` statements help determine what booking type it is (i.e. Hotel, Tour, or Package). If so, the `IsPaid` property of the booking model is set to true and it redirects to the "ViewBookings" page along with a success message passed in the URL as a query parameter.
 
 ```C#
 public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -903,9 +888,9 @@ For more detail see Appendix ([5.7](#57-files-for-payment)) for the content of a
 
 ## 3.7 Key requirement 7: Discounts
 
-For this requirement, packages, which is a combination of both a `Hotel` and a `Tour`, entails a discount which is based on the `Hotel`'s room type. For example a single room incurs a 10% discount, a double 20%, and so on.
+For this requirement, hotel + tour packages entails a discount which is based on the `Hotel`'s room type. For example a single room incurs a 10% discount, a double 20%, and so on.
 
-A `HotelDiscount` model is therefore required, taking in a unique ID, the room type of the hotel, as well as a percentage discount. This table can then be populated manually either via data seeding or manual SQL statements.
+A `HotelDiscount` model is therefore required, taking in a unique ID, the room type of the hotel, as well as a percentage discount.
 
 ```C#
 namespace asp_net_core_web_app_authentication_authorisation.Models
@@ -918,8 +903,6 @@ namespace asp_net_core_web_app_authentication_authorisation.Models
     }
 }
 ```
-
-To avoid editing the existing database models since and applying overriding migrations to the database, the `HotelDiscount` model is required.
 
 First, a discount list on the server-side was initialised.
 
@@ -943,7 +926,7 @@ As the discounts logic is only required for `PackageBookings`, within its `OnPos
 PackageBook.HotelDiscountsList = await _dbContext.HotelDiscounts.ToListAsync();
 ```
 
-A new function in the client-side, `findDiscount()` first gets the value of each element in the dropdown select option, by value. For each dropdown option, the discount is concatenated, so using string manipulation and splitting, the discount value is extracted. And then depending upon the dropdown option selected, the relevant discount is applied.
+A new function in the client-side, `findDiscount()` first gets the value of each element in the dropdown select option, by value. For each dropdown option, the discount is concatenated, by using string manipulation and splitting, the discount value is extracted.Depending upon the dropdown option selected, the relevant discount is applied.
 
 ```Javascript
 function findDicount() {
@@ -972,7 +955,7 @@ function findDicount() {
 }
 ```
 
-This function has to modified slightly, since discounts need to be calculated. Here, the previous `findDiscount()` function is called and that amount is applied to the `packageCost` using simple percentage cost calculations. It then changes the `.innerHTML` attribute of the discount paragraph tag in the form.
+This function has to modified slightly, since discounts need to be calculated. Here, the previous `findDiscount()` function is called and that amount is applied to the `packageCost`, using simple percentage calculations. It then changes the `.innerHTML` attribute of the discount paragraph tag.
 
 ```Javascript
 function calculateTotalPackageCost() { 
@@ -990,7 +973,7 @@ function calculateTotalPackageCost() {
 }
 ```
 
-This final function updates the discount paragraph the tag and updates it dynamically on page reload, since its called on a `window.addEventListener("load", ...). So on submit of the form as the page reloads, or any submit for that matter, the discount tag is updated.
+This final function updates the discount paragraph the tag and updates it dynamically on page reload.
 
 ```Javascript
 function updateDiscount() {
@@ -999,58 +982,15 @@ function updateDiscount() {
 }
 ```
 
-Note that this class was not generically called discounts, since in the future, the company may decide that they want to roll out discounts for Tours and so on.
-
 # 4 Cybersecurity implementation
 
 ## 4.1 TOTP 2FA
 
-ASP.NET identity framework itself supports default two-factor authentication, with only minimal configuration needed. The scaffolding provides the following `EnableAuthenticator.cshtml` page:
+ASP.NET Identity Framework itself supports default two-factor authentication, with only minimal configuration needed.
 
-More importantly, the `@section Scripts` code block contains the required JavaScript libraries for QR code generation. 
+Within the `EnableAuthenticator.cshtml` file, the `@section Scripts` code block contains the required JavaScript libraries for QR code generation.
 
 ```C#
-<h3>@ViewData["Title"]</h3>
-<div>
-    <p>To use an authenticator app go through the following steps:</p>
-    <ol class="list">
-        <li>
-            <p>
-                Download a two-factor authenticator app like Microsoft Authenticator for
-                <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
-                <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
-                Google Authenticator for
-                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
-                <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
-            </p>
-        </li>
-        <li>
-            <p>Scan the QR Code or enter this key <kbd>@Model.SharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
-            <div id="qrCode"></div>
-            <div id="qrCodeData" data-url="@Html.Raw(Model.AuthenticatorUri)"></div>
-        </li>
-        <li>
-            <p>
-                Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
-                with a unique code. Enter the code in the confirmation box below.
-            </p>
-            <div class="row">
-                <div class="col-md-6">
-                    <form id="send-code" method="post">
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Please enter the code."/>
-                            <label asp-for="Input.Code" class="control-label form-label">Verification Code</label>
-                            <span asp-validation-for="Input.Code" class="text-danger"></span>
-                        </div>
-                        <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
-                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                    </form>
-                </div>
-            </div>
-        </li>
-    </ol>
-</div>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script type="text/javascript" src="~/lib/qrcode.js"></script>
@@ -1058,23 +998,19 @@ More importantly, the `@section Scripts` code block contains the required JavaSc
 }
 ```
 
-Implementing this gave a further security layer on the user login side, giving them the option to generate recovery codes in the case that they forget their login credentials completely. TOTP and 2FA provides security even in the event of impersonation with the right user details [@reese2018]. Not only for security requirements, however, this implementation fosters trust with stakeholders and users, giving more of an incentive to use the system [@gupta2024].
+Implementing this gave a further security layer on the user login side, giving them the option to generate recovery codes in the case. TOTP and 2FA provides security even in the event of impersonation with the right user details [@reese2018]. This implementation also fosters trust with stakeholders and users, giving more of an incentive to use the system [@gupta2024].
 
 For more detail, see Appendix [5.8.1](#581-files-for-totp-and-2fa) for all the content relating to TOTP two-factor authentication.
 
 ## 4.2 Password hashing
 
-When database security checks or general configuration is taking place, sensitive user details should be hashed in order to be compliant with GDPR regulations, especially user account passwords [@finck2020]. This is automatically taken into consideration by default by ASP.NET Identity Framework, which applies its own custom algorithm to hash the password. Upon viewing the database, the password field for users is a random string of alphanumeric characters – making it impossible to reverse engineer and find the original password as hashing is a one-way process.
+When database security checks or general configuration is taking place, sensitive user details should be hashed in order to be compliant with GDPR regulations, especially user account passwords [@finck2020]. This is automatically taken into consideration by default by ASP.NET Identity Framework, which applies its own custom algorithm to hash the password. Upon viewing the database, the password field for users is a random string of alphanumeric characters.
 
-The code (see Appendix [5.8.2](#582-files-for-aspnet-identity-framework-hashing-algorithm)) for ASP.NET default Identity Framework cryptography implementation uses a KDF (Key Derivation Function) with a random salt to produce a hash [@stackoverflow2023].
-
-Within the database, the hashing appears like so (see Appendix)
+The code (see Appendix [5.8.2](#582-files-for-aspnet-identity-framework-hashing-algorithm)) for ASP.NET default Identity Framework cryptography implementation. It uses a KDF (Key Derivation Function) with a random salt to produce a hash [@stackoverflow2023].
 
 ## 4.3 Authenticated user-only views
 
-Protecting website routes is critical so that authentication bypass does not occur, and users cannot manipulate and gain access to data [@telerik2023].
-
-Since there are managerial positions, in addition to just normal users, Identity Roles are added (see [3.5](#35-key-requirement-5-manager-role-and-bookings-report-display)) and thus certain pages have to be limited. In the event that the user finds themselves on a page which they are not authorised for, appropriate "access denied" page should be displayed (also through ASP.NET Identity Framework).
+Protecting website routes is critical so that authentication bypass does not occur, and users cannot gain unauthorised access to data [@telerik2023].
 
 To achieve this on specific pages, an attribute can be added at the top of Razor pages like below.
 
@@ -1083,11 +1019,11 @@ To achieve this on specific pages, an attribute can be added at the top of Razor
 @attribute [Authorize(Roles = "manager")]
 ```
 
-In this case, this is applied to the `Report.cshtml` page, where only the manager is allowed to access it. When attempting to access a page with the incorrect role, it redirects to the `AccessDenied.cshtml` page. If in the case the there is no authenticated user detected, it simply redirects the user to the login page, prompting them to sign in.
+In this case, this is applied to the `Report.cshtml` page, where only the manager is allowed to access it. When attempting to access a page with the incorrect role, the `AccessDenied.cshtml` page is displayed. If in the case the there is no authenticated user detected, it simply redirects the user to the login page, prompting them to sign in.
 
-Within the `_Layout.cshtml` shared page, this concept is applied, where based only on the authenticated user's role, specific pages are applied, with the `.IsInRole` and `IsAuthenticated` user attributes.
+Within the `_Layout.cshtml` shared page, this concept is applied, where based only on the authenticated user's role, specific pages are displayed.
 
-```html
+```C#
 @if (User.Identity.IsAuthenticated)
 {
     if (User.IsInRole("client"))
@@ -1114,11 +1050,9 @@ For more details, see Appendix [5.8.3](#583-files-for-authenticated-user-only-vi
 
 With any SQL based database, there is a risk it carries to be prone to SQL injection attacks. However, ASP.NET Identity Framework addresses this issue.
 
-First and foremost, ASP.NET Identity itself uses parameterised SQL statements when interacting with the database, i.e. CRUD (Create, Read, Update, Delete). These queries are distinct from user input, disallowing malicious SQL injection attacks.
+First and foremost, ASP.NET Identity itself uses parameterised SQL statements when interacting with the database. These queries are distinct from user input, disallowing malicious SQL injection attacks.
 
 Secondly, since ASP.NET Identity works with Object Relational Mapping (ORM) frameworks like Entity Framework. This handles the secure translation of the C# code to the relational SQL database, again, via parameterised SQL queries.
-
-Another huge implementation, mainly via scaffolding is the clean sanitisation and validation of user input. In each page's server-side model, the data annotations for the client-side variables provide robust measures. This further mitigates SQL injections.
 
 The following is advised by Microsoft's official documentation [@microsoft2021]:
 
@@ -3813,6 +3747,7 @@ window.addEventListener("load", () => {
 ```
 
 #### 5.8.1.3 [`qrcode.js`](https://github.com/iArcanic/pacific-tours-ccse-cw1/blob/main/wwwroot/lib/qrcode.js)
+
 ```Javascript
 /**
  * @fileoverview
@@ -4429,7 +4364,7 @@ var QRCode;
 })();
 ```
 
-#### 5.8.1.2 UI screenshots
+#### 5.8.1.4 UI screenshots
 
 ![2fa-qr-code-page.png](images/2fa-qr-code-page.png)
 
